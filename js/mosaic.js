@@ -1,9 +1,12 @@
+/* =========================================================
+   MOSAIC — Cancel·lacions per país (NYT scrollytelling)
+   ========================================================= */
+
 function drawMosaic(svg) {
-  svg.selectAll("*").remove();
 
   const width = 1200;
   const height = 450;
-  const margin = { top: 40, right: 260, bottom: 120, left: 40 };
+  const margin = { top: 60, right: 260, bottom: 120, left: 40 };
   const countryGap = 4;
 
   const BASE_OPACITY = {
@@ -11,19 +14,25 @@ function drawMosaic(svg) {
     0: 0.35  // no cancel·lada
   };
 
-  // 🔹 Tooltip
-  const tooltip = d3.select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("position", "absolute")
-    .style("background", "white")
-    .style("border", "1px solid #ccc")
-    .style("padding", "6px")
-    .style("font-size", "12px")
-    .style("pointer-events", "none")
-    .style("opacity", 0);
+  /* ---------- TOOLTIP (singleton) ---------- */
+  let tooltip = d3.select(".tooltip");
+
+  if (tooltip.empty()) {
+    tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("border", "1px solid #ccc")
+      .style("padding", "6px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+  }
 
   d3.csv("hotel_bookings.csv").then(raw => {
+
+    /* ---------- PREPARACIÓ DE DADES ---------- */
 
     const topCountries = [
       "AUT","BEL","BRA","CHE","CN","DEU","ESP","FRA",
@@ -54,9 +63,10 @@ function drawMosaic(svg) {
     });
 
     countries.sort((a, b) => b.total - a.total);
-    const orderedCountries = countries.map(d => d.country);
 
+    const orderedCountries = countries.map(d => d.country);
     const totalSum = d3.sum(countries, d => d.total);
+
     const usableWidth = width - margin.left - margin.right;
     const usableHeight = height - margin.top - margin.bottom;
 
@@ -64,16 +74,33 @@ function drawMosaic(svg) {
       .domain(orderedCountries)
       .range(d3.schemeTableau10);
 
+    /* ---------- TÍTOL ---------- */
+
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", margin.top - 25)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "16px")
+      .attr("font-weight", "bold")
+      .attr("opacity", 0)
+      .text("Distribució de cancel·lacions per país")
+      .transition()
+      .duration(600)
+      .attr("opacity", 1);
+
+    /* ---------- MOSAIC ---------- */
+
     let x0 = margin.left;
 
-    // 🔹 MOSAIC
     countries.forEach(country => {
+
       const countryWidth =
         (country.total / totalSum) * usableWidth - countryGap;
 
       let y0 = margin.top;
 
       country.values.forEach(d => {
+
         const h = (d.count / country.total) * usableHeight;
         const percent = (d.count / country.total * 100).toFixed(1);
 
@@ -83,9 +110,9 @@ function drawMosaic(svg) {
           .attr("width", countryWidth)
           .attr("height", h)
           .attr("fill", countryColor(country.country))
-          .attr("opacity", BASE_OPACITY[d.canceled])
           .attr("data-country", country.country)
           .attr("data-canceled", d.canceled)
+          .attr("opacity", 0)
           .style("cursor", "pointer")
           .on("mouseover", () => {
             highlightCountry(country.country);
@@ -107,12 +134,18 @@ function drawMosaic(svg) {
             tooltip.style("opacity", 0);
           })
           .on("click", () => {
-            tooltip.remove();
+            tooltip.style("opacity", 0);
             drawHotelBreakdown(svg, country.country, d.canceled, raw);
-          });
+          })
+          .transition()
+          .duration(600)
+          .delay(Math.random() * 300)
+          .attr("opacity", BASE_OPACITY[d.canceled]);
 
         y0 += h;
       });
+
+      /* ---------- ETIQUETA PAÍS ---------- */
 
       svg.append("text")
         .attr("x", x0 + countryWidth / 2)
@@ -123,7 +156,11 @@ function drawMosaic(svg) {
         )
         .attr("text-anchor", "end")
         .attr("font-size", "11px")
-        .text(country.country);
+        .attr("opacity", 0)
+        .text(country.country)
+        .transition()
+        .duration(500)
+        .attr("opacity", 1);
 
       x0 += countryWidth + countryGap;
     });
@@ -131,13 +168,13 @@ function drawMosaic(svg) {
     drawCountryLegend(svg, orderedCountries, countryColor, width, margin);
     drawCanceledLegend(svg, width, margin);
 
-    // 🔹 HIGHLIGHT CORRECTE
+    /* ---------- INTERACCIONS ---------- */
+
     function highlightCountry(country) {
       svg.selectAll("rect")
         .attr("opacity", function () {
           const c = d3.select(this).attr("data-country");
           const canceled = d3.select(this).attr("data-canceled");
-          if (!c) return 1;
           return c === country ? BASE_OPACITY[canceled] : 0.1;
         });
 
@@ -149,23 +186,30 @@ function drawMosaic(svg) {
       svg.selectAll("rect")
         .attr("opacity", function () {
           const canceled = d3.select(this).attr("data-canceled");
-          return canceled !== null ? BASE_OPACITY[canceled] : 1;
+          return BASE_OPACITY[canceled];
         });
 
       svg.selectAll(".legend-country")
         .attr("opacity", 1);
     }
+
   });
 }
 
-/* ===== LLEGENDES I DRILL-DOWN (sense canvis funcionals) ===== */
+/* =========================================================
+   LLEGENDES
+   ========================================================= */
 
 function drawCountryLegend(svg, countries, color, width, margin) {
+
   const legend = svg.append("g")
     .attr(
       "transform",
       `translate(${width - margin.right + 20}, ${margin.top})`
-    );
+    )
+    .attr("opacity", 0);
+
+  legend.transition().duration(600).attr("opacity", 1);
 
   legend.append("text")
     .attr("y", -10)
@@ -194,11 +238,15 @@ function drawCountryLegend(svg, countries, color, width, margin) {
 }
 
 function drawCanceledLegend(svg, width, margin) {
+
   const legend = svg.append("g")
     .attr(
       "transform",
       `translate(${width - margin.right + 20}, ${margin.top + 300})`
-    );
+    )
+    .attr("opacity", 0);
+
+  legend.transition().duration(600).attr("opacity", 1);
 
   legend.append("text")
     .attr("y", -10)
@@ -232,11 +280,12 @@ function drawCanceledLegend(svg, width, margin) {
     .text(d => d.label);
 }
 
-// exposició global
-window.drawMosaic = drawMosaic;
+/* =========================================================
+   DRILL-DOWN — Bar chart per tipus d’hotel
+   ========================================================= */
 
-// 🔹 DRILL-DOWN BAR CHART
 function drawHotelBreakdown(svg, country, canceled, rawData) {
+
   svg.selectAll("*").remove();
 
   const width = 1200;
@@ -257,10 +306,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     hotel,
     count
   }));
-
-  const hotelColor = d3.scaleOrdinal()
-    .domain(["City Hotel", "Resort Hotel"])
-    .range(["#4C78A8", "#54A24B"]);
 
   const x = d3.scaleBand()
     .domain(hotels.map(d => d.hotel))
@@ -285,10 +330,14 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .enter()
     .append("rect")
     .attr("x", d => x(d.hotel))
-    .attr("y", d => y(d.count))
+    .attr("y", d => y(0))
     .attr("width", x.bandwidth())
-    .attr("height", d => y(0) - y(d.count))
-    .attr("fill", d => hotelColor(d.hotel));
+    .attr("height", 0)
+    .attr("fill", "#4C78A8")
+    .transition()
+    .duration(600)
+    .attr("y", d => y(d.count))
+    .attr("height", d => y(0) - y(d.count));
 
   svg.append("text")
     .attr("x", width / 2)
@@ -300,7 +349,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
       `${country} — ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}`
     );
 
-  // 🔙 Tornar
   svg.append("text")
     .attr("x", margin.left)
     .attr("y", margin.top - 20)
@@ -311,5 +359,5 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .on("click", () => drawMosaic(svg));
 }
 
-// exposició global
+/* ---------- exposició global ---------- */
 window.drawMosaic = drawMosaic;
