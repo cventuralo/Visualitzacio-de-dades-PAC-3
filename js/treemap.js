@@ -1,7 +1,4 @@
-// ⚠️ FUNCIÓ GLOBAL (FORA DE TOT)
 function drawTreemap(svg) {
-  console.log("drawTreemap cridada");
-
   svg.selectAll("*").remove();
 
   const width = 800;
@@ -23,21 +20,22 @@ function drawTreemap(svg) {
       topCountries.includes(d.country)
     );
 
+    // 🔹 JERARQUIA CORRECTA
     const data = {
       name: "Total",
       children: Array.from(
         d3.group(filtered, d => d.country),
-        ([country, rows]) => ({
+        ([country, rowsCountry]) => ({
           name: country,
           children: Array.from(
-            d3.group(rows, d => d.is_canceled),
-            ([canceled, rows2]) => ({
+            d3.group(rowsCountry, d => d.is_canceled),
+            ([canceled, rowsStatus]) => ({
               name: canceled === "1" ? "Cancel·lada" : "No cancel·lada",
               children: Array.from(
-                d3.group(rows2, d => d.hotel),
-                ([hotel, rows3]) => ({
+                d3.group(rowsStatus, d => d.hotel),
+                ([hotel, rowsHotel]) => ({
                   name: hotel,
-                  value: rows3.length
+                  value: rowsHotel.length
                 })
               )
             })
@@ -47,43 +45,77 @@ function drawTreemap(svg) {
     };
 
     const root = d3.hierarchy(data)
-      .sum(d => d.value || 0);
+      .sum(d => d.value || 0)
+      .sort((a, b) => b.value - a.value);
 
-    d3.treemap()
+    const treemap = d3.treemap()
       .size([width, height])
-      .paddingInner(1)
-      (root);
+      .paddingInner(1);
+
+    treemap(root);
 
     const color = d3.scaleOrdinal(d3.schemeTableau10);
 
+    let currentRoot = root;
+
     const g = svg.append("g");
 
-    const nodes = g.selectAll("g")
-      .data(root.descendants())
-      .enter()
-      .append("g")
-      .attr("transform", d => `translate(${d.x0},${d.y0})`);
+    render(currentRoot);
 
-    nodes.append("rect")
-      .attr("width", d => d.x1 - d.x0)
-      .attr("height", d => d.y1 - d.y0)
-      .attr("fill", d => d.depth === 0 ? "#fff" : color(d.depth))
-      .attr("stroke", "#fff");
+    // 🔹 RENDER CONTROLAT
+    function render(nodeRoot) {
 
-    nodes.append("title")
-      .text(d =>
-        d.ancestors().map(d => d.data.name).reverse().join(" / ") +
-        "\n" + d.value
-      );
+      g.selectAll("*").remove();
 
-    nodes.append("text")
-      .attr("x", 4)
-      .attr("y", 14)
-      .attr("font-size", "10px")
-      .attr("fill-opacity", d => d.children ? 1 : 0.7)
-      .text(d => d.data.name);
+      const nodes = g.selectAll("g")
+        .data(nodeRoot.children)
+        .enter()
+        .append("g")
+        .attr("transform", d => `translate(${d.x0},${d.y0})`)
+        .style("cursor", d => d.children ? "pointer" : "default")
+        .on("click", (event, d) => {
+          if (d.children) {
+            currentRoot = d;
+            render(d);
+          }
+        });
+
+      nodes.append("rect")
+        .attr("width", d => d.x1 - d.x0)
+        .attr("height", d => d.y1 - d.y0)
+        .attr("fill", d => color(d.depth))
+        .attr("stroke", "#fff");
+
+      nodes.append("title")
+        .text(d =>
+          d.ancestors().map(d => d.data.name).reverse().join(" / ") +
+          "\n" + d.value
+        );
+
+      nodes.append("text")
+        .attr("x", 4)
+        .attr("y", 14)
+        .attr("font-size", "11px")
+        .attr("fill-opacity", d => d.children ? 1 : 0.7)
+        .text(d => d.data.name);
+
+      // 🔙 BOTÓ TORNAR
+      if (nodeRoot.parent) {
+        svg.append("text")
+          .attr("x", 10)
+          .attr("y", 20)
+          .attr("font-size", "12px")
+          .attr("fill", "blue")
+          .style("cursor", "pointer")
+          .text("← Tornar enrere")
+          .on("click", () => {
+            currentRoot = nodeRoot.parent;
+            render(currentRoot);
+          });
+      }
+    }
   });
 }
 
-// 🔥 FORÇAR EXPOSICIÓ GLOBAL (CLAU)
+// exposició global
 window.drawTreemap = drawTreemap;
