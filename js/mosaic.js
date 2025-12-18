@@ -1,7 +1,7 @@
 function drawMosaic(svg) {
   svg.selectAll("*").remove();
 
-  const width = 800;
+  const width = 1200;
   const height = 450;
   const margin = { top: 40, right: 260, bottom: 120, left: 40 };
   const countryGap = 4;
@@ -239,7 +239,7 @@ window.drawMosaic = drawMosaic;
 function drawHotelBreakdown(svg, country, canceled, rawData) {
   svg.selectAll("*").remove();
 
-  const width = 800;
+  const width = 1200;
   const height = 450;
   const margin = { top: 60, right: 40, bottom: 60, left: 80 };
 
