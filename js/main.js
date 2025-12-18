@@ -10,9 +10,12 @@ function handleStepEnter(response) {
       showDistribution(svg);
       break;
     case 2:
-      drawSankey(svg, false);
+      drawMosaic(svg);
       break;
     case 3:
+      drawSankey(svg, false);
+      break;
+    case 4:
       drawSankey(svg, true);
       break;
   }
