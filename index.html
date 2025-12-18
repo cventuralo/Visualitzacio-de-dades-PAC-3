@@ -7,24 +7,24 @@
   <!-- D3 -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
-  <!-- Scrollama -->
-  <script src="https://unpkg.com/scrollama"></script>
-
   <!-- D3 Sankey -->
   <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+  <!-- Scrollama -->
+  <script src="https://unpkg.com/scrollama"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-<h1>PAC 3 · Visualització de dades amb Storytelling</h1>
+<h1>PAC 3 · Storytelling amb D3</h1>
 
 <section id="scrolly">
   <article>
-    <div class="step">Escena 1 — Visió global del preu (ADR)</div>
-    <div class="step">Escena 2 — Comparació de la variabilitat</div>
-    <div class="step">Escena 3 — Cancel·lacions</div>
+    <div class="step">Escena 1 — Visió global del preu mitjà (ADR)</div>
+    <div class="step">Escena 2 — La variabilitat del preu</div>
+    <div class="step">Escena 3 — El conflicte: cancel·lacions</div>
     <div class="step">Escena 4 — Resolució final</div>
   </article>
 
@@ -33,11 +33,10 @@
   </figure>
 </section>
 
-<script src="js/scene1_bar.js"></script>
-<script src="js/scene2_distribution.js"></script>
-<script src="js/scene3_sankey.js"></script>
-<script src="js/scrolly.js"></script>
+<script src="js/overview.js"></script>
+<script src="js/distribution.js"></script>
+<script src="js/sankey.js"></script>
+<script src="js/main.js"></script>
 
 </body>
 </html>
-

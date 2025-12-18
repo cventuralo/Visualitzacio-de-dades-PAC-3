@@ -19,7 +19,7 @@ figure {
 }
 
 .step {
-  margin: 0 0 300px 0;
+  margin-bottom: 300px;
   padding: 20px;
   border-left: 4px solid #ccc;
   font-size: 18px;
@@ -28,4 +28,3 @@ figure {
 svg {
   background: #fafafa;
 }
-
