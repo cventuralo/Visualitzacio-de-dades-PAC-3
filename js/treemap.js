@@ -54,28 +54,29 @@ function drawTreemap(svg) {
 
     treemap(root);
 
-    const color = d3.scaleOrdinal(d3.schemeTableau10);
+    const color = d3.scaleOrdinal()
+      .domain([1, 2, 3])
+      .range(["#4C78A8", "#F58518", "#54A24B"]);
 
-    let currentRoot = root;
+    let currentNode = root;
 
     const g = svg.append("g");
 
-    render(currentRoot);
+    render(currentNode);
 
-    // 🔹 RENDER CONTROLAT
-    function render(nodeRoot) {
-
+    // 🔹 RENDER CONTROLAT (CLAU)
+    function render(node) {
       g.selectAll("*").remove();
 
       const nodes = g.selectAll("g")
-        .data(nodeRoot.children)
+        .data(node.children)
         .enter()
         .append("g")
         .attr("transform", d => `translate(${d.x0},${d.y0})`)
         .style("cursor", d => d.children ? "pointer" : "default")
         .on("click", (event, d) => {
           if (d.children) {
-            currentRoot = d;
+            currentNode = d;
             render(d);
           }
         });
@@ -100,7 +101,7 @@ function drawTreemap(svg) {
         .text(d => d.data.name);
 
       // 🔙 BOTÓ TORNAR
-      if (nodeRoot.parent) {
+      if (node.parent) {
         svg.append("text")
           .attr("x", 10)
           .attr("y", 20)
@@ -109,8 +110,8 @@ function drawTreemap(svg) {
           .style("cursor", "pointer")
           .text("← Tornar enrere")
           .on("click", () => {
-            currentRoot = nodeRoot.parent;
-            render(currentRoot);
+            currentNode = node.parent;
+            render(node.parent);
           });
       }
     }
