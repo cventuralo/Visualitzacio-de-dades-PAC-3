@@ -2,7 +2,7 @@
    MOSAIC — Cancel·lacions per país (NYT scrollytelling)
    ========================================================= */
 
-let mosaicData = null; // 👈 dades carregades UNA SOLA VEGADA
+let mosaicData = null;   // dades carregades una sola vegada
 
 function drawMosaic(svg) {
 
@@ -12,8 +12,8 @@ function drawMosaic(svg) {
   const countryGap = 4;
 
   const BASE_OPACITY = {
-    1: 0.85,
-    0: 0.35
+    1: 0.85, // cancel·lada
+    0: 0.35  // no cancel·lada
   };
 
   /* ---------- TOOLTIP (singleton) ---------- */
@@ -31,17 +31,15 @@ function drawMosaic(svg) {
       .style("opacity", 0);
   }
 
-  // 🔹 Si ja tenim dades, dibuixem directament
+  /* ---------- CARREGA DE DADES (1 cop) ---------- */
   if (mosaicData) {
     render(svg, mosaicData);
-    return;
+  } else {
+    d3.csv("hotel_bookings.csv").then(raw => {
+      mosaicData = raw;
+      render(svg, mosaicData);
+    });
   }
-
-  // 🔹 Si no, carreguem CSV UNA SOLA VEGADA
-  d3.csv("hotel_bookings.csv").then(raw => {
-    mosaicData = raw;
-    render(svg, mosaicData);
-  });
 
   /* ===================================================== */
 
@@ -68,17 +66,19 @@ function drawMosaic(svg) {
       d => d.is_canceled
     );
 
-    const countries = grouped.map(([country, values]) => {
-      const vals = values.map(([canceled, count]) => ({
-        canceled: +canceled,
-        count
-      }));
-      return {
-        country,
-        values: vals,
-        total: d3.sum(vals, d => d.count)
-      };
-    }).sort((a, b) => b.total - a.total);
+    const countries = grouped
+      .map(([country, values]) => {
+        const vals = values.map(([canceled, count]) => ({
+          canceled: +canceled,
+          count
+        }));
+        return {
+          country,
+          values: vals,
+          total: d3.sum(vals, d => d.count)
+        };
+      })
+      .sort((a, b) => b.total - a.total);
 
     const orderedCountries = countries.map(d => d.country);
     const totalSum = d3.sum(countries, d => d.total);
@@ -153,6 +153,8 @@ function drawMosaic(svg) {
         y0 += h;
       });
 
+      /* ---------- ETIQUETA PAÍS ---------- */
+
       svg.append("text")
         .attr("x", x0 + countryWidth / 2)
         .attr("y", height - margin.bottom + 70)
@@ -192,11 +194,12 @@ function drawMosaic(svg) {
 }
 
 /* =========================================================
-   DRILL-DOWN — Bar chart
+   DRILL-DOWN — Bar chart per tipus d’hotel
    ========================================================= */
 
 function drawHotelBreakdown(svg, country, canceled, rawData) {
 
+  // 🔥 neteja explícita
   svg.selectAll("*").interrupt().remove();
 
   const width = 1200;
@@ -207,9 +210,16 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     d.country === country && +d.is_canceled === canceled
   );
 
-  const grouped = d3.rollups(data, v => v.length, d => d.hotel);
+  const grouped = d3.rollups(
+    data,
+    v => v.length,
+    d => d.hotel
+  );
 
-  const hotels = grouped.map(([hotel, count]) => ({ hotel, count }));
+  const hotels = grouped.map(([hotel, count]) => ({
+    hotel,
+    count
+  }));
 
   const x = d3.scaleBand()
     .domain(hotels.map(d => d.hotel))
@@ -244,12 +254,28 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("height", d => y(0) - y(d.count));
 
   svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "16px")
+    .attr("font-weight", "bold")
+    .text(
+      `${country} — ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}`
+    );
+
+  /* ---------- TORNAR AL MOSAIC ---------- */
+
+  svg.append("text")
     .attr("x", margin.left)
     .attr("y", margin.top - 20)
+    .attr("font-size", "12px")
     .attr("fill", "blue")
     .style("cursor", "pointer")
     .text("← Tornar al mosaic")
-    .on("click", () => drawMosaic(svg));
+    .on("click", () => {
+      svg.selectAll("*").interrupt().remove(); // 🔥 esborra bar chart
+      drawMosaic(svg);                         // 🔄 torna al mosaic inicial
+    });
 }
 
 /* ---------- exposició global ---------- */
