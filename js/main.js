@@ -18,6 +18,9 @@ function handleStepEnter(response) {
     case 4:
       drawSankey(svg, true);
       break;
+    case 5:
+      drawTreemap(svg);
+      break;
   }
 }
 
