@@ -3,7 +3,7 @@ function drawMosaic(svg) {
 
   const width = 800;
   const height = 450;
-  const margin = { top: 40, right: 160, bottom: 100, left: 40 };
+  const margin = { top: 40, right: 220, bottom: 120, left: 40 };
 
   d3.csv("hotel_bookings.csv").then(raw => {
 
@@ -16,62 +16,81 @@ function drawMosaic(svg) {
       topCountries.includes(d.country)
     );
 
+    // 🔹 Agregació: country × hotel × is_canceled
     const grouped = d3.rollups(
       filtered,
       v => v.length,
       d => d.country,
+      d => d.hotel,
       d => d.is_canceled
     );
 
-    const countries = grouped
-      .map(([country, values]) => {
-        const v = values.map(([canceled, count]) => ({
+    const countries = grouped.map(([country, hotels]) => {
+      const hotelData = hotels.map(([hotel, statuses]) => {
+        const vals = statuses.map(([canceled, count]) => ({
           canceled: +canceled,
           count
         }));
         return {
-          country,
-          values: v,
-          total: d3.sum(v, d => d.count)
+          hotel,
+          values: vals,
+          total: d3.sum(vals, d => d.count)
         };
-      })
-      .filter(d => d.total > 0);
+      });
+      return {
+        country,
+        hotels: hotelData,
+        total: d3.sum(hotelData, d => d.total)
+      };
+    });
 
     const totalSum = d3.sum(countries, d => d.total);
 
-    const color = d3.scaleOrdinal()
+    const countryColor = d3.scaleOrdinal()
       .domain(topCountries)
       .range(d3.schemeTableau10);
+
+    const hotelOrder = ["City Hotel", "Resort Hotel"];
 
     let x0 = margin.left;
     const usableWidth = width - margin.left - margin.right;
     const usableHeight = height - margin.top - margin.bottom;
 
-    // 🔹 Dibuix del mosaic
+    // 🔹 DIBUIX MOSAIC
     countries.forEach(country => {
       const countryWidth = (country.total / totalSum) * usableWidth;
-      let y0 = margin.top;
+      let yCountry = margin.top;
 
-      country.values.forEach(d => {
-        const h = (d.count / country.total) * usableHeight;
+      hotelOrder.forEach(hotelName => {
+        const hotel = country.hotels.find(h => h.hotel === hotelName);
+        if (!hotel) return;
 
-        svg.append("rect")
-          .attr("x", x0)
-          .attr("y", y0)
-          .attr("width", countryWidth)
-          .attr("height", h)
-          .attr("fill", color(country.country))
-          .attr("opacity", d.canceled === 1 ? 0.85 : 0.45);
+        const hotelHeight = (hotel.total / country.total) * usableHeight;
+        let yHotel = yCountry;
 
-        y0 += h;
+        hotel.values.forEach(d => {
+          const h = (d.count / hotel.total) * hotelHeight;
+
+          svg.append("rect")
+            .attr("x", x0)
+            .attr("y", yHotel)
+            .attr("width", countryWidth)
+            .attr("height", h)
+            .attr("fill", countryColor(country.country))
+            .attr("opacity", d.canceled === 1 ? 0.9 : 0.45);
+
+          yHotel += h;
+        });
+
+        yCountry += hotelHeight;
       });
 
-      // 🔹 Label X en vertical (país)
+      // 🔹 Label país (vertical)
       svg.append("text")
         .attr("x", x0 + countryWidth / 2)
-        .attr("y", height - margin.bottom + 60)
+        .attr("y", height - margin.bottom + 70)
         .attr("transform",
-          `rotate(-90, ${x0 + countryWidth / 2}, ${height - margin.bottom + 60})`
+          `rotate(-90, ${x0 + countryWidth / 2}, ${height - margin.bottom + 70})`
         )
         .attr("text-anchor", "end")
         .attr("font-size", "11px")
@@ -80,26 +99,23 @@ function drawMosaic(svg) {
       x0 += countryWidth;
     });
 
-    // 🔹 Etiqueta eix Y
-    svg.append("text")
-      .attr("x", -height / 2)
-      .attr("y", 15)
-      .attr("transform", "rotate(-90)")
-      .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
-      .text("is_canceled");
-
     // 🔹 LLEGENDA
     const legend = svg.append("g")
       .attr("transform", `translate(${width - margin.right + 20}, ${margin.top})`);
 
-    const legendData = [
+    // Estat reserva
+    const statusLegend = [
       { label: "No cancel·lada", opacity: 0.45 },
-      { label: "Cancel·lada", opacity: 0.85 }
+      { label: "Cancel·lada", opacity: 0.9 }
     ];
 
-    legend.selectAll("rect")
-      .data(legendData)
+    legend.append("text")
+      .attr("y", -10)
+      .attr("font-weight", "bold")
+      .text("Estat reserva");
+
+    legend.selectAll(".statusRect")
+      .data(statusLegend)
       .enter()
       .append("rect")
       .attr("x", 0)
@@ -109,16 +125,47 @@ function drawMosaic(svg) {
       .attr("fill", "#999")
       .attr("opacity", d => d.opacity);
 
-    legend.selectAll("text")
-      .data(legendData)
+    legend.selectAll(".statusText")
+      .data(statusLegend)
       .enter()
       .append("text")
       .attr("x", 26)
       .attr("y", (d, i) => i * 25 + 13)
-      .attr("font-size", "12px")
+      .text(d => d.label);
+
+    // Tipus hotel
+    const hotelLegend = [
+      { label: "City Hotel" },
+      { label: "Resort Hotel" }
+    ];
+
+    const hotelLegendGroup = svg.append("g")
+      .attr("transform", `translate(${width - margin.right + 20}, ${margin.top + 90})`);
+
+    hotelLegendGroup.append("text")
+      .attr("y", -10)
+      .attr("font-weight", "bold")
+      .text("Tipus d’hotel");
+
+    hotelLegendGroup.selectAll("rect")
+      .data(hotelLegend)
+      .enter()
+      .append("rect")
+      .attr("x", 0)
+      .attr("y", (d, i) => i * 25)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", "#ccc");
+
+    hotelLegendGroup.selectAll("text")
+      .data(hotelLegend)
+      .enter()
+      .append("text")
+      .attr("x", 26)
+      .attr("y", (d, i) => i * 25 + 13)
       .text(d => d.label);
   })
   .catch(err => {
-    console.error("Error carregant el CSV:", err);
+    console.error("Error mosaic:", err);
   });
 }
