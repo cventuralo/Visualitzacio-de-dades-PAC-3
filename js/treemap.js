@@ -1,19 +1,18 @@
+// ⚠️ FUNCIÓ GLOBAL (FORA DE TOT)
 function drawTreemap(svg) {
+  console.log("drawTreemap cridada");
 
   svg.selectAll("*").remove();
 
   const width = 800;
   const height = 450;
 
-  // IMPORTANT: mida explícita
   svg
     .attr("width", width)
     .attr("height", height)
     .style("font", "11px sans-serif");
 
   d3.csv("hotel_bookings.csv").then(raw => {
-
-    console.log("CSV carregat:", raw.length);
 
     const topCountries = [
       "AUT","BEL","BRA","CHE","CN","DEU","ESP","FRA",
@@ -24,9 +23,6 @@ function drawTreemap(svg) {
       topCountries.includes(d.country)
     );
 
-    console.log("Filtrats:", filtered.length);
-
-    // 🔹 Construcció jeràrquica CORRECTA
     const data = {
       name: "Total",
       children: Array.from(
@@ -41,7 +37,7 @@ function drawTreemap(svg) {
                 d3.group(rows2, d => d.hotel),
                 ([hotel, rows3]) => ({
                   name: hotel,
-                  value: rows3.length   // 🔥 CLAU
+                  value: rows3.length
                 })
               )
             })
@@ -50,12 +46,9 @@ function drawTreemap(svg) {
       )
     };
 
-    // 🔹 Jerarquia
     const root = d3.hierarchy(data)
-      .sum(d => d.value || 0)
-      .sort((a, b) => b.value - a.value);
+      .sum(d => d.value || 0);
 
-    // 🔹 Treemap
     d3.treemap()
       .size([width, height])
       .paddingInner(1)
@@ -79,7 +72,8 @@ function drawTreemap(svg) {
 
     nodes.append("title")
       .text(d =>
-        `${d.ancestors().map(d => d.data.name).reverse().join(" / ")}\n${d.value}`
+        d.ancestors().map(d => d.data.name).reverse().join(" / ") +
+        "\n" + d.value
       );
 
     nodes.append("text")
@@ -88,8 +82,8 @@ function drawTreemap(svg) {
       .attr("font-size", "10px")
       .attr("fill-opacity", d => d.children ? 1 : 0.7)
       .text(d => d.data.name);
-  })
-  .catch(err => {
-    console.error("ERROR carregant CSV:", err);
   });
 }
+
+// 🔥 FORÇAR EXPOSICIÓ GLOBAL (CLAU)
+window.drawTreemap = drawTreemap;
