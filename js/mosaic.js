@@ -234,3 +234,82 @@ function drawCanceledLegend(svg, width, margin) {
 
 // exposició global
 window.drawMosaic = drawMosaic;
+
+// 🔹 DRILL-DOWN BAR CHART
+function drawHotelBreakdown(svg, country, canceled, rawData) {
+  svg.selectAll("*").remove();
+
+  const width = 800;
+  const height = 450;
+  const margin = { top: 60, right: 40, bottom: 60, left: 80 };
+
+  const data = rawData.filter(d =>
+    d.country === country && +d.is_canceled === canceled
+  );
+
+  const grouped = d3.rollups(
+    data,
+    v => v.length,
+    d => d.hotel
+  );
+
+  const hotels = grouped.map(([hotel, count]) => ({
+    hotel,
+    count
+  }));
+
+  const hotelColor = d3.scaleOrdinal()
+    .domain(["City Hotel", "Resort Hotel"])
+    .range(["#4C78A8", "#54A24B"]);
+
+  const x = d3.scaleBand()
+    .domain(hotels.map(d => d.hotel))
+    .range([margin.left, width - margin.right])
+    .padding(0.4);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(hotels, d => d.count)])
+    .nice()
+    .range([height - margin.bottom, margin.top]);
+
+  svg.append("g")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x));
+
+  svg.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y));
+
+  svg.selectAll("rect")
+    .data(hotels)
+    .enter()
+    .append("rect")
+    .attr("x", d => x(d.hotel))
+    .attr("y", d => y(d.count))
+    .attr("width", x.bandwidth())
+    .attr("height", d => y(0) - y(d.count))
+    .attr("fill", d => hotelColor(d.hotel));
+
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", 30)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "16px")
+    .attr("font-weight", "bold")
+    .text(
+      `${country} — ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}`
+    );
+
+  // 🔙 Tornar
+  svg.append("text")
+    .attr("x", margin.left)
+    .attr("y", margin.top - 20)
+    .attr("font-size", "12px")
+    .attr("fill", "blue")
+    .style("cursor", "pointer")
+    .text("← Tornar al mosaic")
+    .on("click", () => drawMosaic(svg));
+}
+
+// exposició global
+window.drawMosaic = drawMosaic;
