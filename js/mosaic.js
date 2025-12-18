@@ -6,8 +6,8 @@ let mosaicData = null;   // dades carregades una sola vegada
 
 function drawMosaic(svg) {
 
-  const width = 1200;
-  const height = 650;
+  const width = 800;
+  const height = 400;
   const margin = { top: 60, right: 260, bottom: 120, left: 60 };
   const countryGap = 4;
 
