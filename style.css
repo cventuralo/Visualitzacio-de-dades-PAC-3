@@ -1,38 +1,40 @@
 body {
   font-family: Georgia, "Times New Roman", serif;
   margin: 0;
-  padding: 40px;
-  background: #fff;
+  padding: 30px;
   color: #111;
+  background: #fff;
 }
 
 .title {
-  max-width: 1100px;
-  margin: 0 auto 60px auto;
-  font-size: 32px;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+  font-size: 28px;
   font-weight: bold;
 }
 
 #scrolly {
   display: flex;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: auto;
+  align-items: flex-start;
 }
 
+/* TEXT */
 article {
-  width: 40%;
-  padding-right: 40px;
+  width: 30%;              /* 👈 menys espai pel text */
+  padding-right: 30px;
 }
 
 .step {
-  min-height: 100vh;
-  font-size: 20px;
-  line-height: 1.6;
-  padding: 40px 20px;
-  border-left: 4px solid #ccc;
+  min-height: 70vh;        /* 👈 MENYS ALT */
+  font-size: 16px;         /* 👈 TEXT MÉS PETIT */
+  line-height: 1.5;
+  padding: 20px 16px;
+  border-left: 3px solid #ddd;
   display: flex;
   align-items: center;
-  opacity: 0.3;
+  opacity: 0.35;
   transition: opacity 0.3s, border-color 0.3s;
 }
 
@@ -41,11 +43,12 @@ article {
   border-left-color: #000;
 }
 
+/* GRÀFIC */
 figure {
   position: sticky;
-  top: 120px;
-  width: 60%;
-  height: 500px;
+  top: 80px;
+  width: 70%;              /* 👈 MÉS ESPAI PEL GRÀFIC */
+  height: 650px;           /* 👈 MOLT MÉS GRAN */
 }
 
 svg {
@@ -54,8 +57,9 @@ svg {
   background: #fafafa;
 }
 
+/* TOOLTIP */
 .tooltip {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   border-radius: 4px;
   pointer-events: none;
 }
