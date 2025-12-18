@@ -6,6 +6,11 @@ function drawMosaic(svg) {
   const margin = { top: 40, right: 260, bottom: 120, left: 40 };
   const countryGap = 4;
 
+  const BASE_OPACITY = {
+    1: 0.85, // cancel·lada
+    0: 0.35  // no cancel·lada
+  };
+
   // 🔹 Tooltip
   const tooltip = d3.select("body")
     .append("div")
@@ -29,7 +34,6 @@ function drawMosaic(svg) {
       topCountries.includes(d.country)
     );
 
-    // 🔹 country × is_canceled
     const grouped = d3.rollups(
       filtered,
       v => v.length,
@@ -49,7 +53,6 @@ function drawMosaic(svg) {
       };
     });
 
-    // 🔹 ORDRE: més reserves → menys
     countries.sort((a, b) => b.total - a.total);
     const orderedCountries = countries.map(d => d.country);
 
@@ -80,7 +83,7 @@ function drawMosaic(svg) {
           .attr("width", countryWidth)
           .attr("height", h)
           .attr("fill", countryColor(country.country))
-          .attr("opacity", d.canceled === 1 ? 0.85 : 0.35)
+          .attr("opacity", BASE_OPACITY[d.canceled])
           .attr("data-country", country.country)
           .attr("data-canceled", d.canceled)
           .style("cursor", "pointer")
@@ -111,7 +114,6 @@ function drawMosaic(svg) {
         y0 += h;
       });
 
-      // 🔹 Label país (vertical)
       svg.append("text")
         .attr("x", x0 + countryWidth / 2)
         .attr("y", height - margin.bottom + 70)
@@ -126,17 +128,17 @@ function drawMosaic(svg) {
       x0 += countryWidth + countryGap;
     });
 
-    // 🔹 LLEGENDA PAÏSOS
     drawCountryLegend(svg, orderedCountries, countryColor, width, margin);
-
-    // 🔹 LLEGENDA is_canceled
     drawCanceledLegend(svg, width, margin);
 
-    // 🔹 FUNCIONS DE HIGHLIGHT
+    // 🔹 HIGHLIGHT CORRECTE
     function highlightCountry(country) {
       svg.selectAll("rect")
         .attr("opacity", function () {
-          return d3.select(this).attr("data-country") === country ? 1 : 0.15;
+          const c = d3.select(this).attr("data-country");
+          const canceled = d3.select(this).attr("data-canceled");
+          if (!c) return 1;
+          return c === country ? BASE_OPACITY[canceled] : 0.1;
         });
 
       svg.selectAll(".legend-country")
@@ -146,8 +148,8 @@ function drawMosaic(svg) {
     function resetHighlight() {
       svg.selectAll("rect")
         .attr("opacity", function () {
-          const canceled = +d3.select(this).attr("data-canceled");
-          return canceled === 1 ? 0.85 : 0.35;
+          const canceled = d3.select(this).attr("data-canceled");
+          return canceled !== null ? BASE_OPACITY[canceled] : 1;
         });
 
       svg.selectAll(".legend-country")
@@ -156,7 +158,8 @@ function drawMosaic(svg) {
   });
 }
 
-// 🔹 LLEGENDA PAÏSOS
+/* ===== LLEGENDES I DRILL-DOWN (sense canvis funcionals) ===== */
+
 function drawCountryLegend(svg, countries, color, width, margin) {
   const legend = svg.append("g")
     .attr(
@@ -190,7 +193,6 @@ function drawCountryLegend(svg, countries, color, width, margin) {
     .text(d => d);
 }
 
-// 🔹 LLEGENDA is_canceled
 function drawCanceledLegend(svg, width, margin) {
   const legend = svg.append("g")
     .attr(
@@ -228,82 +230,6 @@ function drawCanceledLegend(svg, width, margin) {
     .attr("y", 11)
     .attr("font-size", "11px")
     .text(d => d.label);
-}
-
-// 🔹 DRILL-DOWN BAR CHART
-function drawHotelBreakdown(svg, country, canceled, rawData) {
-  svg.selectAll("*").remove();
-
-  const width = 800;
-  const height = 450;
-  const margin = { top: 60, right: 40, bottom: 60, left: 80 };
-
-  const data = rawData.filter(d =>
-    d.country === country && +d.is_canceled === canceled
-  );
-
-  const grouped = d3.rollups(
-    data,
-    v => v.length,
-    d => d.hotel
-  );
-
-  const hotels = grouped.map(([hotel, count]) => ({
-    hotel,
-    count
-  }));
-
-  const hotelColor = d3.scaleOrdinal()
-    .domain(["City Hotel", "Resort Hotel"])
-    .range(["#4C78A8", "#54A24B"]);
-
-  const x = d3.scaleBand()
-    .domain(hotels.map(d => d.hotel))
-    .range([margin.left, width - margin.right])
-    .padding(0.4);
-
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(hotels, d => d.count)])
-    .nice()
-    .range([height - margin.bottom, margin.top]);
-
-  svg.append("g")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x));
-
-  svg.append("g")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y));
-
-  svg.selectAll("rect")
-    .data(hotels)
-    .enter()
-    .append("rect")
-    .attr("x", d => x(d.hotel))
-    .attr("y", d => y(d.count))
-    .attr("width", x.bandwidth())
-    .attr("height", d => y(0) - y(d.count))
-    .attr("fill", d => hotelColor(d.hotel));
-
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", 30)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "16px")
-    .attr("font-weight", "bold")
-    .text(
-      `${country} — ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}`
-    );
-
-  // 🔙 Tornar
-  svg.append("text")
-    .attr("x", margin.left)
-    .attr("y", margin.top - 20)
-    .attr("font-size", "12px")
-    .attr("fill", "blue")
-    .style("cursor", "pointer")
-    .text("← Tornar al mosaic")
-    .on("click", () => drawMosaic(svg));
 }
 
 // exposició global
