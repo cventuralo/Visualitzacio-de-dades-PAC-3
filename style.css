@@ -13,16 +13,19 @@ article {
 }
 
 figure {
-  width: 65%;
   position: sticky;
   top: 20px;
+  height: 500px;
 }
 
 .step {
-  margin-bottom: 300px;
-  padding: 20px;
+  min-height: 100vh;   /* 👈 OBLIGATORI */
+  margin-bottom: 0;
+  padding: 40px 20px;
   border-left: 4px solid #ccc;
   font-size: 18px;
+  display: flex;
+  align-items: center;
 }
 
 svg {
