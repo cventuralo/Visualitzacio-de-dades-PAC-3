@@ -37,7 +37,7 @@ function drawMosaic(svg) {
       d => d.is_canceled
     );
 
-    const countries = grouped.map(([country, values]) => {
+    let countries = grouped.map(([country, values]) => {
       const vals = values.map(([canceled, count]) => ({
         canceled: +canceled,
         count
@@ -49,12 +49,17 @@ function drawMosaic(svg) {
       };
     });
 
+    // ✅ ORDRE CORRECTE: més reserves → menys
+    countries.sort((a, b) => b.total - a.total);
+
+    const orderedCountries = countries.map(d => d.country);
+
     const totalSum = d3.sum(countries, d => d.total);
     const usableWidth = width - margin.left - margin.right;
     const usableHeight = height - margin.top - margin.bottom;
 
     const color = d3.scaleOrdinal()
-      .domain(topCountries)
+      .domain(orderedCountries)
       .range(d3.schemeTableau10);
 
     let x0 = margin.left;
@@ -70,7 +75,7 @@ function drawMosaic(svg) {
         const h = (d.count / country.total) * usableHeight;
         const percent = (d.count / country.total * 100).toFixed(1);
 
-        const rect = svg.append("rect")
+        svg.append("rect")
           .attr("x", x0)
           .attr("y", y0)
           .attr("width", countryWidth)
@@ -129,7 +134,7 @@ function drawMosaic(svg) {
       .attr("text-anchor", "middle")
       .text("is_canceled");
 
-    // 🔹 LLEGENDA PAÏSOS
+    // 🔹 LLEGENDA PAÏSOS (mateix ordre que el mosaic)
     const legend = svg.append("g")
       .attr(
         "transform",
@@ -139,12 +144,12 @@ function drawMosaic(svg) {
     legend.append("text")
       .attr("y", -10)
       .attr("font-weight", "bold")
-      .text("Països");
+      .text("Països (per volum)");
 
     const legendItemHeight = 18;
 
     const legendItems = legend.selectAll(".legend-item")
-      .data(topCountries)
+      .data(orderedCountries)
       .enter()
       .append("g")
       .attr("class", "legend-item")
@@ -163,14 +168,12 @@ function drawMosaic(svg) {
       .attr("font-size", "11px")
       .text(d => d);
 
-    // 🔹 FUNCIONS DE HIGHLIGHT
+    // 🔹 HIGHLIGHT FUNCTIONS
     function highlightCountry(country) {
       svg.selectAll("rect")
-        .attr("opacity", d =>
-          d3.select(d3.event?.target).attr("data-country") === country
-            ? 1
-            : 0.15
-        );
+        .attr("opacity", function () {
+          return d3.select(this).attr("data-country") === country ? 1 : 0.15;
+        });
 
       svg.selectAll(".legend-item")
         .attr("opacity", d => d === country ? 1 : 0.3);
@@ -179,9 +182,9 @@ function drawMosaic(svg) {
     function resetHighlight() {
       svg.selectAll("rect")
         .attr("opacity", function () {
-          return d3.select(this).attr("data-country")
-            ? d3.select(this).attr("opacity")
-            : 1;
+          const c = d3.select(this).attr("data-country");
+          if (!c) return 1;
+          return d3.select(this).attr("opacity");
         });
 
       svg.selectAll(".legend-item")
@@ -190,7 +193,7 @@ function drawMosaic(svg) {
   });
 }
 
-// 🔹 DRILL-DOWN HOTEL
+// 🔹 DRILL-DOWN HOTEL (sense canvis)
 function drawHotelBreakdown(svg, country, canceled, rawData) {
   svg.selectAll("*").remove();
 
@@ -212,8 +215,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     hotel,
     count
   }));
-
-  const total = d3.sum(hotels, d => d.count);
 
   const x = d3.scaleBand()
     .domain(hotels.map(d => d.hotel))
