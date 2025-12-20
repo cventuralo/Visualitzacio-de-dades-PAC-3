@@ -213,7 +213,12 @@ function drawMonthlyCancellationHeatmap(svg) {
       .on("mouseout", (event) => {
         tooltip.style("opacity", 0);
         d3.select(event.currentTarget).attr("opacity", 1);
-      });
+      })
+      .transition()
+      .duration(700)
+      .attr("y", d => y(d.count))
+      .attr("height", d => y(0) - y(d.count));
+      
 
     svg.append("text")
       .attr("x", width / 2)
@@ -231,7 +236,7 @@ function drawMonthlyCancellationHeatmap(svg) {
       .attr("font-size", "12px")
       .attr("fill", "blue")
       .style("cursor", "pointer")
-      .text("← Tornar al heatmap")
+      .text("← Tornar enrere")
       .on("click", () => {
         drawMonthlyCancellationHeatmap(svg);
       });

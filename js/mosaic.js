@@ -311,7 +311,7 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("font-size", "12px")
     .attr("fill", "blue")
     .style("cursor", "pointer")
-    .text("← Tornar al mosaic")
+    .text("← Tornar enrere")
     .on("click", () => {
       tooltip.style("opacity", 0);
       svg.selectAll("*").interrupt().remove();
