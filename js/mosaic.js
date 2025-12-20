@@ -8,7 +8,7 @@ function drawMosaic(svg) {
 
   const width = 800;
   const height = 400;
-  const margin = { top: 60, right: 40, bottom: 120, left: 60 };
+  const margin = { top: 60, right: 40, bottom: 120, left: 20 };
   const countryGap = 4;
 
   const BASE_OPACITY = {
@@ -202,9 +202,9 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
   /* ---------- NETEJA ---------- */
   svg.selectAll("*").interrupt().remove();
 
-  const width = 1200;
-  const height = 650;
-  const margin = { top: 60, right: 260, bottom: 60, left: 80 };
+  const width = 800;
+  const height = 400;
+  const margin = { top: 60, right: 40, bottom: 120, left: 20 };
 
   /* ---------- FILTRAT DE DADES ---------- */
   const data = rawData.filter(d =>
