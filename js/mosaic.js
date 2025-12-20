@@ -206,6 +206,21 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 120, left: 40 };
 
+  /* ---------- TOOLTIP (singleton) ---------- */
+  let tooltip = d3.select(".tooltip");
+  if (tooltip.empty()) {
+    tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("border", "1px solid #ccc")
+      .style("padding", "6px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+  }
+
   /* ---------- FILTRAT DE DADES ---------- */
   const data = rawData.filter(d =>
     d.country === country && +d.is_canceled === canceled
@@ -247,7 +262,7 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("transform", `translate(${margin.left},0)`)
     .call(d3.axisLeft(y));
 
-  /* ---------- BARRES ---------- */
+  /* ---------- BARRES (AMB HOVER) ---------- */
   svg.selectAll(".bar")
     .data(hotels)
     .enter()
@@ -258,6 +273,27 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("width", x.bandwidth())
     .attr("height", 0)
     .attr("fill", d => hotelColor(d.hotel))
+    .style("cursor", "pointer")
+    .on("mouseover", (event, d) => {
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          <strong>${d.hotel}</strong><br/>
+          ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}: <strong>${d.count}</strong>
+        `);
+      d3.select(event.currentTarget)
+        .attr("opacity", 0.8);
+    })
+    .on("mousemove", (event) => {
+      tooltip
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY + 10 + "px");
+    })
+    .on("mouseout", (event) => {
+      tooltip.style("opacity", 0);
+      d3.select(event.currentTarget)
+        .attr("opacity", 1);
+    })
     .transition()
     .duration(700)
     .attr("y", d => y(d.count))
@@ -276,7 +312,7 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
 
   /* ---------- LLEGENDA ---------- */
   const legend = svg.append("g")
-    .attr("transform", `translate(${width - margin.right + 40}, ${margin.top})`);
+    .attr("transform", `translate(${width - 160}, ${margin.top})`);
 
   legend.append("text")
     .attr("y", -10)
@@ -312,8 +348,8 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .style("cursor", "pointer")
     .text("← Tornar al mosaic")
     .on("click", () => {
-      svg.selectAll("*").interrupt().remove(); // 🔥 esborra bar chart
-      drawMosaic(svg);                         // 🔄 torna al mosaic inicial
+      tooltip.style("opacity", 0);
+      svg.selectAll("*").interrupt().remove();
+      drawMosaic(svg);
     });
 }
-
