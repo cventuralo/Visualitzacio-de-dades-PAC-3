@@ -33,16 +33,15 @@ function drawMonthlyCancellationHeatmap(svg) {
   }
 
   if (heatmapDataCache) {
-    renderHeatmap(svg, heatmapDataCache);
-    return;
+    renderHeatmap(heatmapDataCache);
+  } else {
+    d3.csv("hotel_bookings.csv").then(raw => {
+      heatmapDataCache = raw;
+      renderHeatmap(heatmapDataCache);
+    });
   }
 
-  d3.csv("hotel_bookings.csv").then(raw => {
-    heatmapDataCache = raw;
-    renderHeatmap(svg, heatmapDataCache);
-  });
-
-  function renderHeatmap(svg, rawData) {
+  function renderHeatmap(rawData) {
 
     svg.selectAll("*").interrupt().remove();
 
@@ -99,7 +98,7 @@ function drawMonthlyCancellationHeatmap(svg) {
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y));
 
-    svg.selectAll("rect.cell")
+    svg.selectAll(".cell")
       .data(data)
       .enter()
       .append("rect")
@@ -133,7 +132,7 @@ function drawMonthlyCancellationHeatmap(svg) {
       })
       .on("click", (event, d) => {
         tooltip.style("opacity", 0);
-        drawHotelBarFromMonth(svg, d.month, d.canceled, rawData);
+        drawHotelBarFromMonth(d.month, d.canceled, rawData);
       });
 
     svg.append("text")
@@ -145,7 +144,7 @@ function drawMonthlyCancellationHeatmap(svg) {
       .text("Estacionalitat de les cancel·lacions per mes d’arribada");
   }
 
-  function drawHotelBarFromMonth(svg, month, canceled, rawData) {
+  function drawHotelBarFromMonth(month, canceled, rawData) {
 
     svg.selectAll("*").interrupt().remove();
 
@@ -191,9 +190,9 @@ function drawMonthlyCancellationHeatmap(svg) {
       .append("rect")
       .attr("class", "bar")
       .attr("x", d => x(d.hotel))
-      .attr("y", d => y(d.count))
+      .attr("y", y(0))
       .attr("width", x.bandwidth())
-      .attr("height", d => y(0) - y(d.count))
+      .attr("height", 0)
       .attr("fill", d => hotelColor(d.hotel))
       .style("cursor", "pointer")
       .on("mouseover", (event, d) => {
@@ -218,7 +217,6 @@ function drawMonthlyCancellationHeatmap(svg) {
       .duration(700)
       .attr("y", d => y(d.count))
       .attr("height", d => y(0) - y(d.count));
-      
 
     svg.append("text")
       .attr("x", width / 2)
@@ -236,7 +234,7 @@ function drawMonthlyCancellationHeatmap(svg) {
       .attr("font-size", "12px")
       .attr("fill", "blue")
       .style("cursor", "pointer")
-      .text("← Tornar enrere")
+      .text("← Tornar al heatmap")
       .on("click", () => {
         drawMonthlyCancellationHeatmap(svg);
       });
