@@ -8,6 +8,20 @@ function drawStackedHotelCancellations(svg) {
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 60, left: 60 };
 
+  let tooltip = d3.select(".tooltip");
+  if (tooltip.empty()) {
+    tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("border", "1px solid #ccc")
+      .style("padding", "6px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+  }
+
   if (stackedDataCache) {
     render(svg, stackedDataCache);
     return;
@@ -85,7 +99,30 @@ function drawStackedHotelCancellations(svg) {
       .attr("x", d => x(d.data.hotel))
       .attr("y", d => y(d[1]))
       .attr("height", d => y(d[0]) - y(d[1]))
-      .attr("width", x.bandwidth());
+      .attr("width", x.bandwidth())
+      .style("cursor", "pointer")
+      .on("mouseover", (event, d) => {
+        const statusText = d[0] === 0 ? "No cancel·lades" : "Cancel·lades";
+        const value = d[1] - d[0];
+
+        tooltip
+          .style("opacity", 1)
+          .html(`
+            <strong>${d.data.hotel}</strong><br/>
+            ${statusText}: <strong>${value}</strong>
+          `);
+
+        d3.select(event.currentTarget).attr("opacity", 0.8);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", event.pageX + 10 + "px")
+          .style("top", event.pageY + 10 + "px");
+      })
+      .on("mouseout", (event) => {
+        tooltip.style("opacity", 0);
+        d3.select(event.currentTarget).attr("opacity", 1);
+      });
 
     svg.append("text")
       .attr("x", width / 2)
