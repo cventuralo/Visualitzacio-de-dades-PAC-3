@@ -16,19 +16,13 @@ function handleStepEnter(response) {
 
   switch (response.index) {
     case 0:
-      drawOverview(svg);
+      drawStackedHotelCancellations(svg);
       break;
     case 1:
-      drawStackedHotelCancellations(svg);
+      drawMonthlyCancellations(svg);
       break;
     case 2:
       drawMosaic(svg);
-      break;
-    case 3:
-      drawSankey(svg, false);
-      break;
-    case 4:
-      drawTreemap(svg);
       break;
   }
 }
