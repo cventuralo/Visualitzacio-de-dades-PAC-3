@@ -19,7 +19,7 @@ function handleStepEnter(response) {
       drawOverview(svg);
       break;
     case 1:
-      showDistribution(svg);
+      drawStackedHotelCancellations(svg);
       break;
     case 2:
       drawMosaic(svg);
