@@ -1,22 +1,17 @@
-/* =========================================================
-   MOSAIC — Cancel·lacions per país (NYT scrollytelling)
-   ========================================================= */
-
-let mosaicData = null;   // dades carregades una sola vegada
+let mosaicData = null;
 
 function drawMosaic(svg) {
 
-  const width = 700;
+  const width = 800;
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 120, left: 40 };
   const countryGap = 4;
 
   const BASE_OPACITY = {
-    1: 0.85, // cancel·lada
-    0: 0.35  // no cancel·lada
+    1: 0.85,
+    0: 0.35
   };
 
-  /* ---------- TOOLTIP (singleton) ---------- */
   let tooltip = d3.select(".tooltip");
   if (tooltip.empty()) {
     tooltip = d3.select("body")
@@ -31,7 +26,6 @@ function drawMosaic(svg) {
       .style("opacity", 0);
   }
 
-  /* ---------- CARREGA DE DADES (1 cop) ---------- */
   if (mosaicData) {
     render(svg, mosaicData);
   } else {
@@ -41,14 +35,9 @@ function drawMosaic(svg) {
     });
   }
 
-  /* ===================================================== */
-
   function render(svg, raw) {
 
-    // 🔥 NETEJA GARANTIDA (evita solapaments)
     svg.selectAll("*").interrupt().remove();
-
-    /* ---------- PREPARACIÓ DE DADES ---------- */
 
     const topCountries = [
       "AUT","BEL","BRA","CHE","CN","DEU","ESP","FRA",
@@ -90,8 +79,6 @@ function drawMosaic(svg) {
       .domain(orderedCountries)
       .range(d3.schemeTableau10);
 
-    /* ---------- TÍTOL ---------- */
-
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", margin.top - 25)
@@ -99,8 +86,6 @@ function drawMosaic(svg) {
       .attr("font-size", "16px")
       .attr("font-weight", "bold")
       .text("Distribució de cancel·lacions per país");
-
-    /* ---------- MOSAIC ---------- */
 
     let x0 = margin.left;
 
@@ -153,8 +138,6 @@ function drawMosaic(svg) {
         y0 += h;
       });
 
-      /* ---------- ETIQUETA PAÍS ---------- */
-
       svg.append("text")
         .attr("x", x0 + countryWidth / 2)
         .attr("y", height - margin.bottom + 70)
@@ -172,8 +155,6 @@ function drawMosaic(svg) {
     drawCountryLegend(svg, orderedCountries, countryColor, width, margin);
     drawCanceledLegend(svg, width, margin);
   }
-
-  /* ---------- INTERACCIONS ---------- */
 
   function highlightCountry(country) {
     svg.selectAll("rect")
@@ -193,20 +174,14 @@ function drawMosaic(svg) {
   }
 }
 
-/* =========================================================
-   DRILL-DOWN — Bar chart per tipus d’hotel
-   ========================================================= */
-
 function drawHotelBreakdown(svg, country, canceled, rawData) {
 
-  /* ---------- NETEJA ---------- */
   svg.selectAll("*").interrupt().remove();
 
   const width = 800;
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 120, left: 40 };
 
-  /* ---------- TOOLTIP (singleton) ---------- */
   let tooltip = d3.select(".tooltip");
   if (tooltip.empty()) {
     tooltip = d3.select("body")
@@ -221,7 +196,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
       .style("opacity", 0);
   }
 
-  /* ---------- FILTRAT DE DADES ---------- */
   const data = rawData.filter(d =>
     d.country === country && +d.is_canceled === canceled
   );
@@ -237,12 +211,10 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     count
   }));
 
-  /* ---------- ESCALA DE COLORS ---------- */
   const hotelColor = d3.scaleOrdinal()
     .domain(["City Hotel", "Resort Hotel"])
-    .range(["#4C78A8", "#F58518"]); // blau / taronja
+    .range(["#4C78A8", "#F58518"]);
 
-  /* ---------- ESCALES ---------- */
   const x = d3.scaleBand()
     .domain(hotels.map(d => d.hotel))
     .range([margin.left, width - margin.right])
@@ -253,7 +225,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .nice()
     .range([height - margin.bottom, margin.top]);
 
-  /* ---------- EIXOS ---------- */
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
     .call(d3.axisBottom(x));
@@ -262,7 +233,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("transform", `translate(${margin.left},0)`)
     .call(d3.axisLeft(y));
 
-  /* ---------- BARRES (AMB HOVER) ---------- */
   svg.selectAll(".bar")
     .data(hotels)
     .enter()
@@ -281,8 +251,7 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
           <strong>${d.hotel}</strong><br/>
           ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}: <strong>${d.count}</strong>
         `);
-      d3.select(event.currentTarget)
-        .attr("opacity", 0.8);
+      d3.select(event.currentTarget).attr("opacity", 0.8);
     })
     .on("mousemove", (event) => {
       tooltip
@@ -291,15 +260,13 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     })
     .on("mouseout", (event) => {
       tooltip.style("opacity", 0);
-      d3.select(event.currentTarget)
-        .attr("opacity", 1);
+      d3.select(event.currentTarget).attr("opacity", 1);
     })
     .transition()
     .duration(700)
     .attr("y", d => y(d.count))
     .attr("height", d => y(0) - y(d.count));
 
-  /* ---------- TÍTOL ---------- */
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", 30)
@@ -310,7 +277,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
       `${country} — ${canceled === 1 ? "Reserves cancel·lades" : "Reserves no cancel·lades"}`
     );
 
-  /* ---------- LLEGENDA ---------- */
   const legend = svg.append("g")
     .attr("transform", `translate(${width - 160}, ${margin.top})`);
 
@@ -339,7 +305,6 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("font-size", "11px")
     .text(d => d);
 
-  /* ---------- TORNAR AL MOSAIC ---------- */
   svg.append("text")
     .attr("x", margin.left)
     .attr("y", margin.top - 20)
@@ -353,3 +318,5 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
       drawMosaic(svg);
     });
 }
+
+window.drawMosaic = drawMosaic;
