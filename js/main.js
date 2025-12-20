@@ -19,7 +19,8 @@ function handleStepEnter(response) {
       drawStackedHotelCancellations(svg);
       break;
     case 1:
-      drawMonthlyCancellations(svg);
+      // drawMonthlyCancellations(svg);
+      drawMonthlyCancellationHeatmap
       break;
     case 2:
       drawMosaic(svg);
