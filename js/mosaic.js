@@ -6,7 +6,7 @@ let mosaicData = null;   // dades carregades una sola vegada
 
 function drawMosaic(svg) {
 
-  const width = 900;
+  const width = 800;
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 120, left: 40 };
   const countryGap = 4;
@@ -202,7 +202,7 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
   /* ---------- NETEJA ---------- */
   svg.selectAll("*").interrupt().remove();
 
-  const width = 900;
+  const width = 800;
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 120, left: 40 };
 
