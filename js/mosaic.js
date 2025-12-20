@@ -8,7 +8,7 @@ function drawMosaic(svg) {
 
   const width = 800;
   const height = 400;
-  const margin = { top: 60, right: 260, bottom: 120, left: 60 };
+  const margin = { top: 60, right: 40, bottom: 120, left: 60 };
   const countryGap = 4;
 
   const BASE_OPACITY = {
