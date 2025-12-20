@@ -199,13 +199,14 @@ function drawMosaic(svg) {
 
 function drawHotelBreakdown(svg, country, canceled, rawData) {
 
-  // 🔥 neteja explícita
+  /* ---------- NETEJA ---------- */
   svg.selectAll("*").interrupt().remove();
 
   const width = 1200;
   const height = 650;
-  const margin = { top: 60, right: 40, bottom: 60, left: 80 };
+  const margin = { top: 60, right: 260, bottom: 60, left: 80 };
 
+  /* ---------- FILTRAT DE DADES ---------- */
   const data = rawData.filter(d =>
     d.country === country && +d.is_canceled === canceled
   );
@@ -221,6 +222,12 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     count
   }));
 
+  /* ---------- ESCALA DE COLORS ---------- */
+  const hotelColor = d3.scaleOrdinal()
+    .domain(["City Hotel", "Resort Hotel"])
+    .range(["#4C78A8", "#F58518"]); // blau / taronja
+
+  /* ---------- ESCALES ---------- */
   const x = d3.scaleBand()
     .domain(hotels.map(d => d.hotel))
     .range([margin.left, width - margin.right])
@@ -231,6 +238,7 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .nice()
     .range([height - margin.bottom, margin.top]);
 
+  /* ---------- EIXOS ---------- */
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
     .call(d3.axisBottom(x));
@@ -239,20 +247,23 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("transform", `translate(${margin.left},0)`)
     .call(d3.axisLeft(y));
 
-  svg.selectAll("rect")
+  /* ---------- BARRES ---------- */
+  svg.selectAll(".bar")
     .data(hotels)
     .enter()
     .append("rect")
+    .attr("class", "bar")
     .attr("x", d => x(d.hotel))
     .attr("y", d => y(0))
     .attr("width", x.bandwidth())
     .attr("height", 0)
-    .attr("fill", "#4C78A8")
+    .attr("fill", d => hotelColor(d.hotel))
     .transition()
-    .duration(600)
+    .duration(700)
     .attr("y", d => y(d.count))
     .attr("height", d => y(0) - y(d.count));
 
+  /* ---------- TÍTOL ---------- */
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", 30)
@@ -260,11 +271,39 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     .attr("font-size", "16px")
     .attr("font-weight", "bold")
     .text(
-      `${country} — ${canceled === 1 ? "Cancel·lades" : "No cancel·lades"}`
+      `${country} — ${canceled === 1 ? "Reserves cancel·lades" : "Reserves no cancel·lades"}`
     );
 
-  /* ---------- TORNAR AL MOSAIC ---------- */
+  /* ---------- LLEGENDA ---------- */
+  const legend = svg.append("g")
+    .attr("transform", `translate(${width - margin.right + 40}, ${margin.top})`);
 
+  legend.append("text")
+    .attr("y", -10)
+    .attr("font-weight", "bold")
+    .text("Tipus d’hotel");
+
+  const legendItems = ["City Hotel", "Resort Hotel"];
+
+  const item = legend.selectAll(".legend-hotel")
+    .data(legendItems)
+    .enter()
+    .append("g")
+    .attr("class", "legend-hotel")
+    .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+  item.append("rect")
+    .attr("width", 14)
+    .attr("height", 14)
+    .attr("fill", d => hotelColor(d));
+
+  item.append("text")
+    .attr("x", 20)
+    .attr("y", 11)
+    .attr("font-size", "11px")
+    .text(d => d);
+
+  /* ---------- TORNAR AL MOSAIC ---------- */
   svg.append("text")
     .attr("x", margin.left)
     .attr("y", margin.top - 20)
@@ -278,5 +317,3 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
     });
 }
 
-/* ---------- exposició global ---------- */
-window.drawMosaic = drawMosaic;
