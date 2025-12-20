@@ -6,9 +6,9 @@ let mosaicData = null;   // dades carregades una sola vegada
 
 function drawMosaic(svg) {
 
-  const width = 800;
+  const width = 900;
   const height = 400;
-  const margin = { top: 60, right: 40, bottom: 120, left: 20 };
+  const margin = { top: 60, right: 60, bottom: 120, left: 40 };
   const countryGap = 4;
 
   const BASE_OPACITY = {
@@ -202,9 +202,9 @@ function drawHotelBreakdown(svg, country, canceled, rawData) {
   /* ---------- NETEJA ---------- */
   svg.selectAll("*").interrupt().remove();
 
-  const width = 800;
+  const width = 900;
   const height = 400;
-  const margin = { top: 60, right: 40, bottom: 120, left: 20 };
+  const margin = { top: 60, right: 60, bottom: 120, left: 40 };
 
   /* ---------- FILTRAT DE DADES ---------- */
   const data = rawData.filter(d =>
