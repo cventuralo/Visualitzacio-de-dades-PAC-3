@@ -20,7 +20,7 @@ function handleStepEnter(response) {
       break;
     case 1:
       // drawMonthlyCancellations(svg);
-      drawMonthlyCancellationHeatmap
+      drawMonthlyCancellationHeatmap(svg)
       break;
     case 2:
       drawMosaic(svg);
