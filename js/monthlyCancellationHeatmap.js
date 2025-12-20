@@ -234,7 +234,7 @@ function drawMonthlyCancellationHeatmap(svg) {
       .attr("font-size", "12px")
       .attr("fill", "blue")
       .style("cursor", "pointer")
-      .text("← Tornar al heatmap")
+      .text("← Tornar enrere")
       .on("click", () => {
         drawMonthlyCancellationHeatmap(svg);
       });
