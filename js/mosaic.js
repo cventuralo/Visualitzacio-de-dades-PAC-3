@@ -6,7 +6,7 @@ let mosaicData = null;   // dades carregades una sola vegada
 
 function drawMosaic(svg) {
 
-  const width = 800;
+  const width = 700;
   const height = 400;
   const margin = { top: 60, right: 60, bottom: 120, left: 40 };
   const countryGap = 4;
@@ -52,7 +52,7 @@ function drawMosaic(svg) {
 
     const topCountries = [
       "AUT","BEL","BRA","CHE","CN","DEU","ESP","FRA",
-      "GBR","IRL","ITA","NLD","PRT","SWE","USA"
+      "GBR","IRL","ITA","NLD","PRT","SWE"
     ];
 
     const filtered = raw.filter(d =>
