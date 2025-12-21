@@ -16,7 +16,7 @@ function handleStepEnter(response) {
 
   switch (response.index) {
     case 0:
-      drawStackedHotelCancellations(svg);
+      drawCancellationsOverview(svg);
       break;
     case 1:
       // drawMonthlyCancellations(svg);
