@@ -152,8 +152,8 @@ function drawMosaic(svg) {
       x0 += countryWidth + countryGap;
     });
 
-    drawCountryLegend(svg, orderedCountries, countryColor, width, margin);
-    drawCanceledLegend(svg, width, margin);
+    // drawCountryLegend(svg, orderedCountries, countryColor, width, margin);
+    // drawCanceledLegend(svg, width, margin);
   }
 
   function highlightCountry(country) {
