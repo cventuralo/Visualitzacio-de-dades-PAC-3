@@ -207,7 +207,7 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
 
   const width = 800;
   const height = 350;
-  const margin = { top: 60, right: 40, bottom: 60, left: 60 };
+  const margin = { top: 60, right: 70, bottom: 60, left: 60 };
 
   const x = d3.scaleLinear()
     .domain([xMin, xMax])
@@ -225,7 +225,11 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
 
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x));
+    .call(
+      d3.axisBottom(x)
+        .ticks(6)
+        .tickSizeOuter(0)
+    );
 
   svg.append("g")
     .attr("transform", `translate(${margin.left},0)`)
