@@ -4,7 +4,6 @@ function drawAdrQuartilesCancellation(svg) {
 
   svg.selectAll("*").interrupt().remove();
 
-  /* ================= TOOLTIP ================= */
   let tooltip = d3.select(".tooltip");
   if (tooltip.empty()) {
     tooltip = d3.select("body")
@@ -32,7 +31,6 @@ function drawAdrQuartilesCancellation(svg) {
 
     svg.selectAll("*").interrupt().remove();
 
-    /* ================= TITLE ================= */
     svg.append("text")
       .attr("x", 400)
       .attr("y", 30)
@@ -45,7 +43,6 @@ function drawAdrQuartilesCancellation(svg) {
       .duration(600)
       .attr("opacity", 1);
 
-    /* ================= DATA PREP ================= */
     const prepared = prepareAdrQuartileData(rawData);
 
     const aggregated = new Map(
@@ -57,14 +54,14 @@ function drawAdrQuartilesCancellation(svg) {
     const hotels = Array.from(aggregated.keys());
     const quartiles = ["Q1", "Q2", "Q3", "Q4"];
 
-    /* ================= SCALES ================= */
-    const width = 800;
+    const totalWidth = 800;
+    const panelWidth = totalWidth / 2;
     const height = 360;
     const margin = { top: 70, right: 40, bottom: 40, left: 90 };
 
     const x = d3.scaleLinear()
       .domain([0, 100])
-      .range([margin.left, width - margin.right]);
+      .range([margin.left, panelWidth - margin.right]);
 
     const y = d3.scaleBand()
       .domain(quartiles)
@@ -75,11 +72,10 @@ function drawAdrQuartilesCancellation(svg) {
       .domain([0, 1])
       .range(["#4C78A8", "#E45756"]);
 
-    /* ================= DRAW ================= */
     hotels.forEach((hotel, i) => {
 
       const group = svg.append("g")
-        .attr("transform", `translate(${i * 400},0)`)
+        .attr("transform", `translate(${i * panelWidth},0)`)
         .attr("opacity", 0);
 
       const hotelData = quartiles.map(q => {
@@ -95,7 +91,6 @@ function drawAdrQuartilesCancellation(svg) {
       const stack = d3.stack().keys([0, 1]);
       const stacked = stack(hotelData);
 
-      /* AXES */
       group.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "%"));
@@ -104,15 +99,13 @@ function drawAdrQuartilesCancellation(svg) {
         .attr("transform", `translate(${margin.left},0)`)
         .call(d3.axisLeft(y));
 
-      /* HOTEL TITLE */
       group.append("text")
-        .attr("x", 200)
+        .attr("x", panelWidth / 2)
         .attr("y", 55)
         .attr("text-anchor", "middle")
         .attr("font-weight", "bold")
         .text(hotel);
 
-      /* STACKED BARS */
       group.selectAll(".layer")
         .data(stacked)
         .enter()
@@ -164,8 +157,6 @@ function drawAdrQuartilesCancellation(svg) {
     });
   }
 }
-
-/* ================= DRILL-DOWN ================= */
 
 function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
 
@@ -243,8 +234,6 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
     .on("click", () => drawAdrQuartilesCancellation(svg));
 }
 
-/* ================= DATA HELPERS ================= */
-
 function prepareAdrQuartileData(rawData) {
 
   const result = [];
@@ -294,5 +283,4 @@ function aggregateQuartilePercentages(data) {
   );
 }
 
-/* ================= EXPORT ================= */
 window.drawAdrQuartilesCancellation = drawAdrQuartilesCancellation;
