@@ -5,11 +5,7 @@
   <title>PAC 3 · Storytelling amb D3</title>
 
   <!-- D3 -->
-  <!--<script src="https://d3js.org/d3.v7.min.js"></script>-->>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-
-  <!-- D3 Sankey -->
-  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 
   <!-- Scrollama -->
   <script src="https://unpkg.com/scrollama"></script>
@@ -24,23 +20,44 @@
 <section id="scrolly">
 
   <article>
+
     <div class="step">
-      Escena 1 — Cancel·lacions segons el tipus d’hotel
+      <h2>Escena 1 — Cancel·lacions segons el tipus d’hotel</h2>
+      <p>
+        Les cancel·lacions representen una part rellevant del total de reserves.
+        Els <em>City Hotels</em> concentren més reserves i més cancel·lacions que
+        els <em>Resort Hotels</em>, mostrant comportaments diferents segons el tipus d’hotel.
+      </p>
     </div>
 
     <div class="step">
-      Escena 2 — Estacionalitat de les cancel·lacions per mes d’arribada
+      <h2>Escena 2 — Estacionalitat de les cancel·lacions</h2>
+      <p>
+        Les cancel·lacions no són constants al llarg de l’any.
+        A la primavera i l’estiu augmenten clarament, mentre que als mesos d’hivern
+        el volum de cancel·lacions és més baix.
+      </p>
     </div>
 
     <div class="step">
-      Escena 3 — El conflicte de cancel·lacions segons el país d’origen
+      <h2>Escena 3 — Cancel·lacions segons el país d’origen</h2>
+      <p>
+        El país d’origen té un pes important en les cancel·lacions.
+        Un nombre reduït de països concentra la major part dels casos,
+        fet que reflecteix patrons de viatge diferenciats.
+      </p>
     </div>
 
     <div class="step">
-      Escena 4 — El preu (ADR) i el risc de cancel·lació
+      <h2>Escena 4 — ADR i risc de cancel·lació</h2>
+      <p>
+        El preu mitjà diari influeix en el risc de cancel·lació.
+        En els <em>City Hotels</em> els preus més baixos tendeixen a cancel·lar-se més,
+        mentre que en els <em>Resort Hotels</em> el risc és més uniforme.
+      </p>
     </div>
+
   </article>
-
 
   <figure>
     <svg id="vis" width="800" height="450"></svg>
@@ -48,7 +65,6 @@
 
 </section>
 
-<!-- Scripts de visualització -->
 <script src="js/mosaic.js"></script>
 <script src="js/adrQuartilesCancellation.js"></script>
 <script src="js/cancellationsOverview.js"></script>
