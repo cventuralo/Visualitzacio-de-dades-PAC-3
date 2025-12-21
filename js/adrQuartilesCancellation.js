@@ -134,14 +134,19 @@ function drawAdrQuartilesCancellation(svg) {
         })
         .on("mouseout", () => tooltip.style("opacity", 0))
         .on("click", (event, d) => {
-          const canceled = d3.select(event.currentTarget.parentNode).datum().key;
-          drawAdrQuartileDrilldown(
-            svg,
-            rawData,
-            d.data.hotel,
-            d.data.quartile,
-            canceled
-          );
+            tooltip.style("opacity", 0);
+
+            const canceled = d3
+                .select(event.currentTarget.parentNode)
+                .datum().key;
+
+            drawAdrQuartileDrilldown(
+                svg,
+                rawData,
+                d.data.hotel,
+                d.data.quartile,
+                canceled
+            );
         });
     });
   }
@@ -150,6 +155,9 @@ function drawAdrQuartilesCancellation(svg) {
 function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile, canceled) {
 
   svg.selectAll("*").interrupt().remove();
+
+  let tooltip = d3.select(".tooltip");
+  tooltip.style("opacity", 0);
 
   const data = rawData.filter(d =>
     d.hotel === hotel &&
@@ -176,7 +184,10 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile, canceled) {
   else if (quartile === "Q3") { xMin = q2; xMax = q3; }
   else {
     xMin = q3;
-    xMax = d3.quantile(filtered.map(d => +d.adr).sort(d3.ascending), 0.98);
+    xMax = d3.quantile(
+      filtered.map(d => +d.adr).sort(d3.ascending),
+      0.98
+    );
   }
 
   const width = 800;
@@ -210,10 +221,15 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile, canceled) {
     .enter()
     .append("rect")
     .attr("x", d => x(d.x0))
-    .attr("y", d => y(d.length))
+    .attr("y", y(0))
     .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
-    .attr("height", d => y(0) - y(d.length))
-    .attr("fill", "#4C78A8");
+    .attr("height", 0)
+    .attr("fill", "#4C78A8")
+    .transition()
+    .duration(800)
+    .ease(d3.easeCubicOut)
+    .attr("y", d => y(d.length))
+    .attr("height", d => y(0) - y(d.length));
 
   svg.append("text")
     .attr("x", width / 2)
@@ -223,7 +239,7 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile, canceled) {
     .text(
       `${hotel} — ${quartile} · ${
         canceled === 1 ? "Cancel·lades" : "No cancel·lades"
-      } (ADR)`
+      } (Distribució ADR)`
     );
 
   svg.append("text")
@@ -232,7 +248,10 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile, canceled) {
     .attr("fill", "blue")
     .style("cursor", "pointer")
     .text("← Tornar enrere")
-    .on("click", () => drawAdrQuartilesCancellation(svg));
+    .on("click", () => {
+      tooltip.style("opacity", 0);
+      drawAdrQuartilesCancellation(svg);
+    });
 }
 
 function prepareAdrQuartileData(rawData) {
