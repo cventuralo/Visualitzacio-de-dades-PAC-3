@@ -55,7 +55,7 @@ function drawAdrQuartilesCancellation(svg) {
     const quartiles = ["Q1", "Q2", "Q3", "Q4"];
 
     const totalWidth = 800;
-    const gap = 30;
+    const gap = 10;
     const panelWidth = (totalWidth - gap) / 2;
     const height = 360;
     const margin = { top: 70, right: 30, bottom: 40, left: 80 };
@@ -286,4 +286,4 @@ function aggregateQuartilePercentages(data) {
   );
 }
 
-window.drawAdrQuartilesCancellation = drawAdrQuartilesCancellation;
+window.drawAdrQuartilesCancellation = drawAdrQuartilesCancellation; 
