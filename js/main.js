@@ -42,4 +42,4 @@ function init() {
 window.addEventListener("load", init);
 
 // escena inicial
-drawStackedHotelCancellations(svg);
+drawCancellationsOverview(svg);
