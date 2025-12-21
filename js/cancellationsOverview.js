@@ -4,6 +4,20 @@ function drawCancellationsOverview(svg) {
 
   svg.selectAll("*").interrupt().remove();
 
+  let tooltip = d3.select(".tooltip");
+  if (tooltip.empty()) {
+    tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background", "white")
+      .style("border", "1px solid #ccc")
+      .style("padding", "6px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+  }
+
   if (cancellationsDataCache) {
     render(cancellationsDataCache);
   } else {
@@ -33,7 +47,7 @@ function drawCancellationsOverview(svg) {
       .attr("transform", "translate(220,240)")
       .attr("opacity", 0);
 
-    drawCancellationPie(pieGroup, rawData);
+    drawCancellationPie(pieGroup, rawData, tooltip);
 
     pieGroup
       .transition()
@@ -45,7 +59,7 @@ function drawCancellationsOverview(svg) {
       .attr("transform", "translate(380,0)")
       .attr("opacity", 0);
 
-    drawStackedHotelCancellations(stackedGroup, rawData);
+    drawStackedHotelCancellations(stackedGroup, rawData, tooltip);
 
     stackedGroup
       .transition()
@@ -55,7 +69,7 @@ function drawCancellationsOverview(svg) {
   }
 }
 
-function drawCancellationPie(group, rawData) {
+function drawCancellationPie(group, rawData, tooltip) {
 
   const data = d3.rollups(
     rawData,
@@ -66,6 +80,7 @@ function drawCancellationPie(group, rawData) {
     value
   }));
 
+  const total = d3.sum(data, d => d.value);
   const radius = 120;
 
   const color = d3.scaleOrdinal()
@@ -74,17 +89,40 @@ function drawCancellationPie(group, rawData) {
 
   const pie = d3.pie().value(d => d.value);
   const arc = d3.arc().innerRadius(0).outerRadius(radius);
-
-  const arcStart = d3.arc()
-    .innerRadius(0)
-    .outerRadius(0);
+  const arcStart = d3.arc().innerRadius(0).outerRadius(0);
 
   const arcs = group.selectAll("path")
     .data(pie(data))
     .enter()
     .append("path")
     .attr("fill", d => color(d.data.name))
-    .attr("d", arcStart);
+    .attr("d", arcStart)
+    .style("cursor", "pointer")
+    .on("mouseover", (event, d) => {
+      const percent = ((d.data.value / total) * 100).toFixed(1);
+
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          <strong>${d.data.name}</strong><br/>
+          Reserves: <strong>${d.data.value}</strong><br/>
+          Percentatge: <strong>${percent}%</strong>
+        `);
+
+      d3.select(event.currentTarget)
+        .attr("stroke", "#333")
+        .attr("stroke-width", 1);
+    })
+    .on("mousemove", (event) => {
+      tooltip
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY + 10 + "px");
+    })
+    .on("mouseout", (event) => {
+      tooltip.style("opacity", 0);
+      d3.select(event.currentTarget)
+        .attr("stroke", "none");
+    });
 
   arcs
     .transition()
@@ -113,8 +151,7 @@ function drawCancellationPie(group, rawData) {
     .attr("opacity", 1);
 }
 
-
-function drawStackedHotelCancellations(svg, rawData) {
+function drawStackedHotelCancellations(svg, rawData, tooltip) {
 
   const width = 400;
   const height = 400;
@@ -184,24 +221,35 @@ function drawStackedHotelCancellations(svg, rawData) {
     .attr("y", y(0))
     .attr("height", 0)
     .attr("width", x.bandwidth())
+    .style("cursor", "pointer")
+    .on("mouseover", (event, d) => {
+      const statusText = d[0] === 0 ? "No cancel·lades" : "Cancel·lades";
+      const value = d[1] - d[0];
+
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          <strong>${d.data.hotel}</strong><br/>
+          ${statusText}<br/>
+          Reserves: <strong>${value}</strong>
+        `);
+
+      d3.select(event.currentTarget).attr("opacity", 0.8);
+    })
+    .on("mousemove", (event) => {
+      tooltip
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY + 10 + "px");
+    })
+    .on("mouseout", (event) => {
+      tooltip.style("opacity", 0);
+      d3.select(event.currentTarget).attr("opacity", 1);
+    })
     .transition()
     .duration(800)
     .delay((d, i) => i * 100)
     .attr("y", d => y(d[1]))
     .attr("height", d => y(d[0]) - y(d[1]));
-
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", 30)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "14px")
-    .attr("font-weight", "bold")
-    .attr("opacity", 0)
-    .text("Cancel·lacions per tipus d’hotel")
-    .transition()
-    .delay(600)
-    .duration(400)
-    .attr("opacity", 1);
 }
 
 window.drawCancellationsOverview = drawCancellationsOverview;
