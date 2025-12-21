@@ -55,9 +55,10 @@ function drawAdrQuartilesCancellation(svg) {
     const quartiles = ["Q1", "Q2", "Q3", "Q4"];
 
     const totalWidth = 800;
-    const panelWidth = totalWidth / 2;
+    const gap = 30;
+    const panelWidth = (totalWidth - gap) / 2;
     const height = 360;
-    const margin = { top: 70, right: 40, bottom: 40, left: 90 };
+    const margin = { top: 70, right: 30, bottom: 40, left: 80 };
 
     const x = d3.scaleLinear()
       .domain([0, 100])
@@ -66,7 +67,7 @@ function drawAdrQuartilesCancellation(svg) {
     const y = d3.scaleBand()
       .domain(quartiles)
       .range([margin.top, height - margin.bottom])
-      .padding(0.2);
+      .padding(0.25);
 
     const color = d3.scaleOrdinal()
       .domain([0, 1])
@@ -75,7 +76,7 @@ function drawAdrQuartilesCancellation(svg) {
     hotels.forEach((hotel, i) => {
 
       const group = svg.append("g")
-        .attr("transform", `translate(${i * panelWidth},0)`)
+        .attr("transform", `translate(${i * (panelWidth + gap)},0)`)
         .attr("opacity", 0);
 
       const hotelData = quartiles.map(q => {
@@ -182,8 +183,10 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
   const height = 350;
   const margin = { top: 60, right: 40, bottom: 60, left: 60 };
 
+  const xMax = d3.quantile(filtered.map(d => +d.adr).sort(d3.ascending), 0.98);
+
   const x = d3.scaleLinear()
-    .domain(d3.extent(filtered, d => +d.adr))
+    .domain([0, xMax])
     .nice()
     .range([margin.left, width - margin.right]);
 
