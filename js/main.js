@@ -25,6 +25,9 @@ function handleStepEnter(response) {
     case 2:
       drawMosaic(svg);
       break;
+    case 3:
+      drawAdrQuartilesCancellation(svg);
+      break;
   }
 }
 
