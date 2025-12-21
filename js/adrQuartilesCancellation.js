@@ -62,7 +62,7 @@ function drawAdrQuartilesCancellation(svg) {
 
     const x = d3.scaleLinear()
       .domain([0, 100])
-      .range([margin.left, panelWidth - margin.right]);
+      .range([margin.left, panelWidth - margin.right - 40]);
 
     const y = d3.scaleBand()
       .domain(quartiles)
@@ -94,7 +94,12 @@ function drawAdrQuartilesCancellation(svg) {
 
       group.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "%"));
+        .call(
+          d3.axisBottom(x)
+            .ticks(5)
+            .tickFormat(d => d + "%")
+            .tickSizeOuter(0)
+        );
 
       group.append("g")
         .attr("transform", `translate(${margin.left},0)`)
@@ -183,7 +188,10 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
   const height = 350;
   const margin = { top: 60, right: 40, bottom: 60, left: 60 };
 
-  const xMax = d3.quantile(filtered.map(d => +d.adr).sort(d3.ascending), 0.98);
+  const xMax = d3.quantile(
+    filtered.map(d => +d.adr).sort(d3.ascending),
+    0.98
+  );
 
   const x = d3.scaleLinear()
     .domain([0, xMax])
@@ -286,4 +294,4 @@ function aggregateQuartilePercentages(data) {
   );
 }
 
-window.drawAdrQuartilesCancellation = drawAdrQuartilesCancellation; 
+window.drawAdrQuartilesCancellation = drawAdrQuartilesCancellation;
