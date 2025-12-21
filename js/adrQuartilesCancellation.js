@@ -37,11 +37,7 @@ function drawAdrQuartilesCancellation(svg) {
       .attr("text-anchor", "middle")
       .attr("font-size", "18px")
       .attr("font-weight", "bold")
-      .attr("opacity", 0)
-      .text("ADR, quartils i risc de cancel·lació")
-      .transition()
-      .duration(600)
-      .attr("opacity", 1);
+      .text("ADR, quartils i risc de cancel·lació");
 
     const prepared = prepareAdrQuartileData(rawData);
 
@@ -76,8 +72,7 @@ function drawAdrQuartilesCancellation(svg) {
     hotels.forEach((hotel, i) => {
 
       const group = svg.append("g")
-        .attr("transform", `translate(${i * (panelWidth + gap)},0)`)
-        .attr("opacity", 0);
+        .attr("transform", `translate(${i * (panelWidth + gap)},0)`);
 
       const hotelData = quartiles.map(q => {
         const entry = aggregated.get(hotel)?.get(q);
@@ -94,12 +89,7 @@ function drawAdrQuartilesCancellation(svg) {
 
       group.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(
-          d3.axisBottom(x)
-            .ticks(5)
-            .tickFormat(d => d + "%")
-            .tickSizeOuter(0)
-        );
+        .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "%"));
 
       group.append("g")
         .attr("transform", `translate(${margin.left},0)`)
@@ -122,9 +112,9 @@ function drawAdrQuartilesCancellation(svg) {
         .enter()
         .append("rect")
         .attr("y", d => y(d.data.quartile))
-        .attr("x", x(0))
+        .attr("x", d => x(d[0]))
         .attr("height", y.bandwidth())
-        .attr("width", 0)
+        .attr("width", d => x(d[1]) - x(d[0]))
         .style("cursor", "pointer")
         .on("mouseover", (event, d) => {
           tooltip
@@ -132,48 +122,42 @@ function drawAdrQuartilesCancellation(svg) {
             .html(`
               <strong>${d.data.hotel}</strong><br/>
               Quartil ${d.data.quartile}<br/>
-              Cancel·lades: <strong>${d.data[1].toFixed(1)}%</strong><br/>
-              No cancel·lades: <strong>${d.data[0].toFixed(1)}%</strong>
+              ${d3.select(event.currentTarget.parentNode).datum().key === 1
+                ? "Cancel·lades"
+                : "No cancel·lades"}: <strong>${(d[1] - d[0]).toFixed(1)}%</strong>
             `);
-          d3.select(event.currentTarget).attr("opacity", 0.8);
         })
-        .on("mousemove", event => {
+        .on("mousemove", e => {
           tooltip
-            .style("left", event.pageX + 10 + "px")
-            .style("top", event.pageY + 10 + "px");
+            .style("left", e.pageX + 10 + "px")
+            .style("top", e.pageY + 10 + "px");
         })
-        .on("mouseout", event => {
-          tooltip.style("opacity", 0);
-          d3.select(event.currentTarget).attr("opacity", 1);
-        })
+        .on("mouseout", () => tooltip.style("opacity", 0))
         .on("click", (event, d) => {
-          tooltip.style("opacity", 0);
-          drawAdrQuartileDrilldown(svg, rawData, d.data.hotel, d.data.quartile);
-        })
-        .transition()
-        .delay(i * 400)
-        .duration(800)
-        .attr("x", d => x(d[0]))
-        .attr("width", d => x(d[1]) - x(d[0]));
-
-      group.transition()
-        .delay(i * 400)
-        .duration(600)
-        .attr("opacity", 1);
+          const canceled = d3.select(event.currentTarget.parentNode).datum().key;
+          drawAdrQuartileDrilldown(
+            svg,
+            rawData,
+            d.data.hotel,
+            d.data.quartile,
+            canceled
+          );
+        });
     });
   }
 }
 
-function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
+function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile, canceled) {
 
   svg.selectAll("*").interrupt().remove();
 
-  const data = rawData
-    .filter(d => d.hotel === hotel && !isNaN(+d.adr));
+  const data = rawData.filter(d =>
+    d.hotel === hotel &&
+    +d.is_canceled === canceled &&
+    !isNaN(+d.adr)
+  );
 
-  const adrValues = data
-    .map(d => +d.adr)
-    .sort(d3.ascending);
+  const adrValues = data.map(d => +d.adr).sort(d3.ascending);
 
   const q1 = d3.quantile(adrValues, 0.25);
   const q2 = d3.quantile(adrValues, 0.5);
@@ -187,22 +171,12 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
   });
 
   let xMin, xMax;
-
-  if (quartile === "Q1") {
-    xMin = d3.min(filtered, d => +d.adr);
-    xMax = q1;
-  } else if (quartile === "Q2") {
-    xMin = q1;
-    xMax = q2;
-  } else if (quartile === "Q3") {
-    xMin = q2;
-    xMax = q3;
-  } else {
+  if (quartile === "Q1") { xMin = d3.min(filtered, d => +d.adr); xMax = q1; }
+  else if (quartile === "Q2") { xMin = q1; xMax = q2; }
+  else if (quartile === "Q3") { xMin = q2; xMax = q3; }
+  else {
     xMin = q3;
-    xMax = d3.quantile(
-      filtered.map(d => +d.adr).sort(d3.ascending),
-      0.98
-    );
+    xMax = d3.quantile(filtered.map(d => +d.adr).sort(d3.ascending), 0.98);
   }
 
   const width = 800;
@@ -225,11 +199,7 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
 
   svg.append("g")
     .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(
-      d3.axisBottom(x)
-        .ticks(6)
-        .tickSizeOuter(0)
-    );
+    .call(d3.axisBottom(x).ticks(6).tickSizeOuter(0));
 
   svg.append("g")
     .attr("transform", `translate(${margin.left},0)`)
@@ -240,21 +210,21 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
     .enter()
     .append("rect")
     .attr("x", d => x(d.x0))
-    .attr("y", y(0))
-    .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
-    .attr("height", 0)
-    .attr("fill", "#4C78A8")
-    .transition()
-    .duration(800)
     .attr("y", d => y(d.length))
-    .attr("height", d => y(0) - y(d.length));
+    .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+    .attr("height", d => y(0) - y(d.length))
+    .attr("fill", "#4C78A8");
 
   svg.append("text")
     .attr("x", width / 2)
     .attr("y", 30)
     .attr("text-anchor", "middle")
     .attr("font-weight", "bold")
-    .text(`${hotel} — ${quartile} (Distribució ADR)`);
+    .text(
+      `${hotel} — ${quartile} · ${
+        canceled === 1 ? "Cancel·lades" : "No cancel·lades"
+      } (ADR)`
+    );
 
   svg.append("text")
     .attr("x", margin.left)
