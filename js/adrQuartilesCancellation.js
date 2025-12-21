@@ -171,7 +171,9 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
   const data = rawData
     .filter(d => d.hotel === hotel && !isNaN(+d.adr));
 
-  const adrValues = data.map(d => +d.adr).sort(d3.ascending);
+  const adrValues = data
+    .map(d => +d.adr)
+    .sort(d3.ascending);
 
   const q1 = d3.quantile(adrValues, 0.25);
   const q2 = d3.quantile(adrValues, 0.5);
@@ -184,17 +186,31 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
     return d.adr > q3;
   });
 
+  let xMin, xMax;
+
+  if (quartile === "Q1") {
+    xMin = d3.min(filtered, d => +d.adr);
+    xMax = q1;
+  } else if (quartile === "Q2") {
+    xMin = q1;
+    xMax = q2;
+  } else if (quartile === "Q3") {
+    xMin = q2;
+    xMax = q3;
+  } else {
+    xMin = q3;
+    xMax = d3.quantile(
+      filtered.map(d => +d.adr).sort(d3.ascending),
+      0.98
+    );
+  }
+
   const width = 800;
   const height = 350;
   const margin = { top: 60, right: 40, bottom: 60, left: 60 };
 
-  const xMax = d3.quantile(
-    filtered.map(d => +d.adr).sort(d3.ascending),
-    0.98
-  );
-
   const x = d3.scaleLinear()
-    .domain([0, xMax])
+    .domain([xMin, xMax])
     .nice()
     .range([margin.left, width - margin.right]);
 
@@ -221,7 +237,7 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
     .append("rect")
     .attr("x", d => x(d.x0))
     .attr("y", y(0))
-    .attr("width", d => x(d.x1) - x(d.x0) - 1)
+    .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
     .attr("height", 0)
     .attr("fill", "#4C78A8")
     .transition()
@@ -230,7 +246,7 @@ function drawAdrQuartileDrilldown(svg, rawData, hotel, quartile) {
     .attr("height", d => y(0) - y(d.length));
 
   svg.append("text")
-    .attr("x", 400)
+    .attr("x", width / 2)
     .attr("y", 30)
     .attr("text-anchor", "middle")
     .attr("font-weight", "bold")
