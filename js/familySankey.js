@@ -17,8 +17,8 @@ function drawFamilySankey(svg) {
   }
 
   function getFamilyType(d) {
-    if (+d.Babies > 0) return "Amb babies";
-    if (+d.Children > 0) return "Amb children";
+    if (+d.babies > 0) return "Amb babies";
+    if (+d.children > 0) return "Amb children";
     return "Sense infants";
   }
 
