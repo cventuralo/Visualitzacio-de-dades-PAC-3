@@ -81,20 +81,14 @@ svg {
   pointer-events: none;
 }
 
-.step-full {
-  width: 100%;
-  margin: 0 auto 80px auto;
-  border-left: none;
-  opacity: 1;
-  background: #f8f8f8;
-}
-
-.step-full .step-content {
+.conclusions {
   max-width: 900px;
-  margin: auto;
-  padding: 40px 20px;
+  margin: 120px auto 80px auto;
+  font-size: 17px;
+  line-height: 1.6;
 }
 
-.step-full h2 {
-  font-size: 24px;
+.conclusions h2 {
+  font-size: 26px;
+  margin-bottom: 20px;
 }
