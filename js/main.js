@@ -28,6 +28,9 @@ function handleStepEnter(response) {
     case 3:
       drawAdrQuartilesCancellation(svg);
       break;
+    case 4:
+      drawFamilySankey(svg);
+      break;
   }
 }
 
