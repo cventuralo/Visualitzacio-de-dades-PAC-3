@@ -31,6 +31,10 @@ function handleStepEnter(response) {
     case 4:
       drawFamilySankey(svg);
       break;
+    case 5:
+      // Conclusions
+      clearSVG();
+      break;
   }
 }
 

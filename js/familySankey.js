@@ -26,14 +26,13 @@ function drawFamilySankey(svg) {
 
     svg.selectAll("*").interrupt().remove();
 
-    // Prepare data
     const data = raw.map(d => ({
       family: getFamilyType(d),
       hotel: d.hotel,
       status: +d.is_canceled === 1 ? "Cancel·lada" : "No cancel·lada"
     }));
 
-    // Define nodes with fixed order
+    // Defineixo els nodes
     const nodes = [
       { name: "Sense infants", category: "family", column: 0 },
       { name: "Amb children", category: "family", column: 0 },
@@ -58,7 +57,7 @@ function drawFamilySankey(svg) {
       });
     }
 
-    // Family → Hotel
+    // Family - Hotel
     d3.rollups(
       data,
       v => v.length,
@@ -70,7 +69,7 @@ function drawFamilySankey(svg) {
       });
     });
 
-    // Hotel → Status
+    // Hotel - Status
     d3.rollups(
       data,
       v => v.length,
@@ -82,7 +81,7 @@ function drawFamilySankey(svg) {
       });
     });
 
-    // Sankey layout with fixed alignment
+    // Sankey
     const sankey = d3.sankey()
       .nodeWidth(20)
       .nodePadding(24)
@@ -94,7 +93,6 @@ function drawFamilySankey(svg) {
       links: links.map(d => ({ ...d }))
     });
 
-    // Color scale
     const color = d3.scaleOrdinal()
       .domain([
         "Sense infants",
@@ -115,7 +113,7 @@ function drawFamilySankey(svg) {
         "#e45756"  // cancel
       ]);
 
-    // Draw links
+    // Links
     svg.append("g")
       .attr("fill", "none")
       .attr("stroke-opacity", 0.45)
@@ -127,7 +125,7 @@ function drawFamilySankey(svg) {
       .attr("stroke", d => color(d.source.name))
       .attr("stroke-width", d => Math.max(1, d.width));
 
-    // Draw nodes
+    // Nodes
     const node = svg.append("g")
       .selectAll("rect")
       .data(sankeyNodes)
@@ -140,11 +138,11 @@ function drawFamilySankey(svg) {
       .attr("fill", d => color(d.name))
       .attr("stroke", "#333");
 
-    // Node titles
+    // Títol Nodes
     node.append("title")
       .text(d => `${d.name}\n${d.value} reserves`);
 
-    // Labels
+    // Etiquetes
     svg.append("g")
       .selectAll("text")
       .data(sankeyNodes)
@@ -158,7 +156,7 @@ function drawFamilySankey(svg) {
       .attr("font-weight", "bold")
       .text(d => d.name);
 
-    // Title
+    // Títol general
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", 30)

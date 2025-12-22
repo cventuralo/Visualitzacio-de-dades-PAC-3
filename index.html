@@ -2,7 +2,7 @@
 <html lang="ca">
 <head>
   <meta charset="utf-8" />
-  <title>PAC 3 · Storytelling amb D3</title>
+  <title>PAC 3 · Storytelling</title>
 
   <!-- D3 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -18,6 +18,21 @@
 <body>
 
 <h1 class="title">PAC 3 · Storytelling amb D3</h1>
+
+<section class="intro">
+  <h2>Introducció</h2>
+  <p>
+    Aquesta visualització explora els patrons de cancel·lació de reserves hoteleres
+    a partir de diferents factors clau: el tipus d’hotel, l’estacionalitat,
+    el país d’origen, el preu mitjà per nit (ADR) i la presència de <em>children</em>
+    o <em>babies</em> a la reserva.
+  </p>
+  <p>
+    Mitjançant un relat visual basat en <em>scrolling</em>, l’objectiu és ajudar a
+    comprendre com aquests factors influeixen en el risc de cancel·lació i com
+    es relacionen entre si, combinant una visió global amb anàlisis més detallades.
+  </p>
+</section>
 
 <section id="scrolly">
 
@@ -78,7 +93,41 @@
       </p>
     </div>
   </div>
-  
+
+  <div class="step">
+    <div class="step-content">
+      <h2>Conclusions</h2>
+      <p>
+        Les visualitzacions mostren que les cancel·lacions de reserves hoteleres
+        estan influïdes per diversos factors, com el tipus d’hotel, el mes d’arribada,
+        el país d’origen, el preu mitjà per nit (ADR) o la presència de
+        <em>children</em> i <em>babies</em>.
+      </p>
+      <p>
+        Tanmateix, tot i identificar diferències i tendències, com una major concentració
+        de cancel·lacions en determinats mesos, en alguns mercats d’origen o en quartils
+        de preu més baixos, no s’observa un patró clar i inequívoc que permeti
+        predir de manera fiable quines reserves acabaran sent cancel·lades.
+      </p>
+      <p>
+        Factors com l’estacionalitat o l’ADR aporten context, però el comportament de
+        cancel·lació continua sent heterogeni i probablement condicionat per variables
+        addicionals no visibles en aquestes dades, com decisions personals o canvis
+        imprevistos dels clients.
+      </p>
+      <p>
+        En aquest sentit, la visualització no pretén identificar una regla única,
+        sinó facilitar una millor comprensió del fenomen, mostrant com diferents factors
+        poden influir parcialment en el risc de cancel·lació.
+      </p>
+      <p>
+        El format narratiu i interactiu permet captar l’atenció de l’usuari i afavorir
+        una exploració progressiva de les dades, ajudant a interpretar la complexitat
+        del comportament de reserva més enllà de conclusions simplistes.
+      </p>
+    </div>
+  </div>
+
   </article>
 
   <figure>

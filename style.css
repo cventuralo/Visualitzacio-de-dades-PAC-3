@@ -68,3 +68,19 @@ svg {
   border-radius: 4px;
   pointer-events: none;
 }
+
+.intro {
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.intro h2 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.step:last-child {
+  background: #f8f8f8;
+}
