@@ -84,3 +84,21 @@ svg {
 .step:last-child {
   background: #f8f8f8;
 }
+
+.step-full {
+  width: 100vw;
+  max-width: 1200px;
+  margin: 0 auto 80px auto;
+  border-left: none;
+  opacity: 1;
+  background: #f8f8f8;
+}
+
+.step-full .step-content {
+  max-width: 900px;
+  margin: auto;
+}
+
+.step-full h2 {
+  font-size: 24px;
+}
