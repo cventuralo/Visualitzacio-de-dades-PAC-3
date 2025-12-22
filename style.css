@@ -81,14 +81,18 @@ svg {
   pointer-events: none;
 }
 
+.intro,
 .conclusions {
-  max-width: 900px;
-  margin: 120px auto 80px auto;
+  max-width: 1200px;
+  margin: 0 auto 80px auto;
+  padding: 40px 30px;
   font-size: 17px;
   line-height: 1.6;
+  background: rgba(0, 0, 0, 0.02);
 }
 
+.intro h2,
 .conclusions h2 {
-  font-size: 26px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 16px;
 }
