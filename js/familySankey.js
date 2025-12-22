@@ -1,3 +1,5 @@
+let familySankeyDataCache = null;
+
 function drawFamilySankey(svg) {
 
   svg.selectAll("*").interrupt().remove();
@@ -5,20 +7,41 @@ function drawFamilySankey(svg) {
   const width = 800;
   const height = 450;
 
-  d3.csv("hotel_bookings.csv").then(raw => {
+  if (familySankeyDataCache) {
+    render(familySankeyDataCache);
+  } else {
+    d3.csv("hotel_bookings.csv").then(raw => {
+      familySankeyDataCache = raw;
+      render(familySankeyDataCache);
+    });
+  }
 
+  function getFamilyType(d) {
+    if (+d.Babies > 0) return "Amb babies";
+    if (+d.Children > 0) return "Amb children";
+    return "Sense infants";
+  }
+
+  function render(raw) {
+
+    svg.selectAll("*").interrupt().remove();
+
+    // Prepare data
     const data = raw.map(d => ({
-      family:
-        (+d.Children > 0 || +d.Babies > 0) ? "Amb infants" : "Sense infants",
+      family: getFamilyType(d),
       hotel: d.hotel,
       canceled: +d.is_canceled === 1 ? "Cancel·lada" : "No cancel·lada"
     }));
 
+    // Defineix nodes
     const nodes = [
-      { name: "Amb infants", category: "family" },
       { name: "Sense infants", category: "family" },
+      { name: "Amb children", category: "family" },
+      { name: "Amb babies", category: "family" },
+
       { name: "City Hotel", category: "hotel" },
       { name: "Resort Hotel", category: "hotel" },
+
       { name: "Cancel·lada", category: "status" },
       { name: "No cancel·lada", category: "status" }
     ];
@@ -47,7 +70,7 @@ function drawFamilySankey(svg) {
       });
     });
 
-    // Hotel - Cancel·lació
+    // Hotel - Cancellation
     d3.rollups(
       data,
       v => v.length,
@@ -59,21 +82,22 @@ function drawFamilySankey(svg) {
       });
     });
 
+    // Sankey
     const sankey = d3.sankey()
       .nodeWidth(18)
       .nodePadding(14)
-      .extent([[1, 40], [width - 1, height - 10]]);
+      .extent([[1, 50], [width - 1, height - 20]]);
 
-    const { nodes: sankeyNodes, links: sankeyLinks } =
-      sankey({
-        nodes: nodes.map(d => ({ ...d })),
-        links: links.map(d => ({ ...d }))
-      });
+    const { nodes: sankeyNodes, links: sankeyLinks } = sankey({
+      nodes: nodes.map(d => ({ ...d })),
+      links: links.map(d => ({ ...d }))
+    });
 
     const color = d3.scaleOrdinal()
       .domain(["family", "hotel", "status"])
       .range(["#72B7B2", "#4C78A8", "#E45756"]);
 
+    // Links
     svg.append("g")
       .attr("fill", "none")
       .attr("stroke-opacity", 0.4)
@@ -85,6 +109,7 @@ function drawFamilySankey(svg) {
       .attr("stroke", d => color(d.source.category))
       .attr("stroke-width", d => Math.max(1, d.width));
 
+    // nodes
     const node = svg.append("g")
       .selectAll("rect")
       .data(sankeyNodes)
@@ -114,12 +139,12 @@ function drawFamilySankey(svg) {
 
     svg.append("text")
       .attr("x", width / 2)
-      .attr("y", 25)
+      .attr("y", 30)
       .attr("text-anchor", "middle")
       .attr("font-size", "16px")
       .attr("font-weight", "bold")
-      .text("Influència de babies i children en la cancel·lació");
-  });
+      .text("Babies, children i cancel·lacions segons el tipus d’hotel");
+  }
 }
 
 window.drawFamilySankey = drawFamilySankey;
